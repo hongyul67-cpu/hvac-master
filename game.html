@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>공조 마스터 · 개념 게임</title>
+<style>
+  :root{ --bg:#070d1c; --panel:#0d1a33; --panel2:#111f3d; --line:#243456;
+         --ink:#eaf1ff; --dim:#9db0d6; --acc:#22d3ee; }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:radial-gradient(1200px 700px at 50% -10%,#12234a,#070d1c 60%);
+       color:var(--ink);font-family:system-ui,"Segoe UI",Roboto,"Malgun Gothic",sans-serif;
+       min-height:100vh;-webkit-tap-highlight-color:transparent}
+  .wrap{max-width:760px;margin:0 auto;padding:16px 14px 90px}
+  a{color:inherit}
+
+  /* 헤더 */
+  header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  header .logo{font-size:24px}
+  header h1{font-size:18px;margin:0;font-weight:900;letter-spacing:-.3px}
+  header .sp{flex:1}
+  .homebtn{border:1px solid var(--line);background:var(--panel);color:var(--dim);
+    border-radius:10px;padding:8px 12px;font-size:12.5px;font-weight:800;cursor:pointer;
+    text-decoration:none}
+  #hud{margin:8px 0 4px}
+
+  /* 카드 공통 */
+  .card{background:linear-gradient(160deg,var(--panel),#0b1730);border:1px solid var(--line);
+    border-radius:18px;padding:16px}
+  .muted{color:var(--dim)}
+
+  /* 단원 선택 */
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .utile{border:1px solid var(--line);background:var(--panel);border-radius:16px;padding:14px;
+    cursor:pointer;transition:.15s;text-align:left}
+  .utile:active{transform:scale(.98)}
+  .utile .ic{font-size:26px}
+  .utile .nm{font-weight:900;margin-top:6px;font-size:15px}
+  .utile .cnt{font-size:11.5px;color:var(--dim);margin-top:2px}
+  .utile.all{grid-column:1/-1;background:linear-gradient(120deg,#123a5c,#0d1f3f)}
+
+  .modes{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 6px}
+  .mode{flex:1;min-width:130px;border:1px solid var(--line);background:var(--panel);
+    border-radius:14px;padding:12px;cursor:pointer;transition:.15s}
+  .mode:active{transform:scale(.98)}
+  .mode .mi{font-size:22px}
+  .mode .mt{font-weight:900;margin-top:4px;font-size:14px}
+  .mode .md{font-size:11.5px;color:var(--dim);margin-top:2px;line-height:1.4}
+
+  .sechead{display:flex;align-items:center;gap:8px;margin:18px 4px 8px}
+  .sechead b{font-size:13px;color:var(--dim);font-weight:800;letter-spacing:.5px}
+  .sechead .ln{flex:1;height:1px;background:var(--line)}
+
+  /* 진행 바 */
+  .bar{height:8px;background:#0a1730;border:1px solid var(--line);
+    border-radius:999px;overflow:hidden;margin:2px 0 14px}
+  .bar > i{display:block;height:100%;width:0;border-radius:999px;
+    background:linear-gradient(90deg,#22d3ee,#3b82f6);transition:width .3s}
+  .topline{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;
+    font-size:12.5px;color:var(--dim);font-weight:700}
+
+  .btn{border:0;border-radius:13px;padding:13px;font-size:15px;font-weight:900;
+    font-family:inherit;cursor:pointer;background:linear-gradient(135deg,#0ea5e9,#2563eb);
+    color:#fff;width:100%}
+  .btn:active{transform:translateY(1px)}
+  .btn.ghost{background:var(--panel);border:1px solid var(--line);color:var(--ink)}
+  .btn.sm{width:auto;padding:9px 14px;font-size:13px}
+  .row{display:flex;gap:8px}
+
+  /* ── 배우기 플래시카드 ── */
+  .flash{perspective:1200px;margin:8px 0 14px}
+  .flash .inner{position:relative;min-height:220px;transition:transform .5s;transform-style:preserve-3d;cursor:pointer}
+  .flash.flip .inner{transform:rotateY(180deg)}
+  .flash .face{position:absolute;inset:0;backface-visibility:hidden;border-radius:18px;
+    border:1px solid var(--line);padding:22px;display:flex;flex-direction:column;justify-content:center}
+  .flash .front{background:linear-gradient(160deg,#12325a,#0d1f3f)}
+  .flash .back{background:linear-gradient(160deg,#0d1f3f,#0b1730);transform:rotateY(180deg)}
+  .flash .u{font-size:11.5px;font-weight:800;color:var(--acc);letter-spacing:.5px}
+  .flash .term{font-size:26px;font-weight:900;margin-top:8px;line-height:1.25}
+  .flash .hintlbl{margin-top:14px;font-size:12px;color:var(--dim)}
+  .flash .def{font-size:16px;line-height:1.65;margin-top:6px}
+  .flash .tip{margin-top:14px;font-size:13.5px;color:#fbbf24;font-weight:700}
+  .flash .tapgo{position:absolute;right:16px;bottom:14px;font-size:11.5px;color:var(--dim)}
+
+  /* ── 짝맞추기 ── */
+  .matchgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0}
+  .mcol{display:flex;flex-direction:column;gap:8px}
+  .mitem{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:12px;
+    cursor:pointer;font-size:13.5px;line-height:1.4;transition:.12s;text-align:left;min-height:52px;
+    display:flex;align-items:center}
+  .mitem.term{font-weight:800}
+  .mitem.sel{border-color:var(--acc);background:#0e2b3d;box-shadow:0 0 0 2px rgba(34,211,238,.25)}
+  .mitem.done{opacity:.35;pointer-events:none;border-style:dashed}
+  .mitem.bad{animation:mbad .4s}
+  @keyframes mbad{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+  /* ── 분류 ── */
+  .sortstage{margin:8px 0}
+  .chip{border:1px solid var(--line);background:var(--panel2);border-radius:999px;
+    padding:11px 15px;font-size:14px;font-weight:700;cursor:grab;display:inline-block;
+    margin:4px;user-select:none;touch-action:none}
+  .chip.drag{opacity:.5}
+  .pool{min-height:64px;display:flex;flex-wrap:wrap;gap:2px;justify-content:center;
+    padding:8px;border:1px dashed var(--line);border-radius:14px;margin-bottom:12px}
+  .buckets{display:grid;gap:10px}
+  .bucket{border:2px dashed var(--line);border-radius:16px;padding:10px;min-height:74px;transition:.15s}
+  .bucket.over{border-style:solid;background:#0e1f3d}
+  .bucket .bh{font-size:13px;font-weight:900;margin-bottom:6px;text-align:center}
+  .bucket .drop{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;min-height:34px}
+  .selhint{text-align:center;font-size:12px;color:var(--dim);margin-bottom:8px}
+
+  /* ── 순서 ── */
+  .orderlist{display:flex;flex-direction:column;gap:8px;margin:8px 0}
+  .ostep{border:1px solid var(--line);background:var(--panel);border-radius:12px;
+    padding:12px 12px 12px 44px;font-size:14px;font-weight:700;position:relative;cursor:grab;
+    touch-action:none}
+  .ostep .no{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:24px;height:24px;
+    border-radius:50%;background:#1c2f52;color:var(--acc);font-size:12px;font-weight:900;
+    display:flex;align-items:center;justify-content:center}
+  .ostep.drag{opacity:.4}
+  .ostep.over{border-color:var(--acc)}
+  .ostep.ok{border-color:#34d399;background:#0f2c22}
+  .ostep.no{}
+
+  .center{text-align:center}
+  .big{font-size:40px}
+  .hide{display:none!important}
+  .scoreline{font-size:13px;color:var(--dim);margin-top:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="logo">🌬️</span>
+    <h1>공조 마스터 <span class="muted" style="font-weight:700;font-size:13px">· 개념 게임</span></h1>
+    <span class="sp"></span>
+    <a class="homebtn" href="index.html">← 허브</a>
+  </header>
+  <div id="hud"></div>
+
+  <!-- 화면들 -->
+  <div id="screen"></div>
+</div>
+
+<script src="fx.js"></script>
+<script src="data.js"></script>
+<script>
+"use strict";
+var GJ = window.GJ;
+var screen = document.getElementById('screen');
+FX.hud(document.getElementById('hud'));
+
+/* 유틸 */
+function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i];a[i]=a[j];a[j]=t; } return a; }
+function el(html){ var d=document.createElement('div'); d.innerHTML=html.trim(); return d.firstChild; }
+function unitName(u){ var m=GJ.units.filter(function(x){return x.id===u})[0]; return m?m.name:'전체'; }
+function esc(s){ return String(s).replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c];}); }
+
+var state = { unit:null };   // 선택한 단원(null=전체)
+
+/* ══════════ 홈: 단원 선택 ══════════ */
+function home(){
+  FX.reset();
+  var cards = GJ.units.map(function(u){
+    var n = GJ.cards.filter(function(c){return c.u===u.id}).length;
+    return '<button class="utile" onclick="pickUnit('+u.id+')">'
+         + '<div class="ic">'+u.icon+'</div><div class="nm">'+u.id+'. '+u.name+'</div>'
+         + '<div class="cnt">개념 '+n+'개</div></button>';
+  }).join('');
+  screen.innerHTML =
+    '<div class="card center" style="margin-bottom:14px">'
+    + '<div class="big">🌬️</div>'
+    + '<div style="font-size:19px;font-weight:900;margin-top:4px">공기조화설비 개념 게임</div>'
+    + '<div class="muted" style="font-size:13px;margin-top:6px;line-height:1.6">'
+    + '단원을 고르고 → <b style="color:#fff">배우기</b>로 익힌 뒤 → 게임으로 확인해요.<br>'
+    + '먼저 보고 익히는 게 순서!</div></div>'
+    + '<div class="sechead"><b>단원 선택</b><span class="ln"></span></div>'
+    + '<div class="grid">'
+    + '<button class="utile all" onclick="pickUnit(0)"><div class="ic">🏆</div>'
+    + '<div class="nm">전체 (섞어서)</div><div class="cnt">모든 단원 통합</div></button>'
+    + cards + '</div>';
+}
+window.pickUnit = function(u){ state.unit = u===0?null:u; modeMenu(); };
+
+/* ══════════ 모드 메뉴 ══════════ */
+function poolCards(){ return state.unit? GJ.cards.filter(function(c){return c.u===state.unit}) : GJ.cards; }
+function poolSorts(){ return state.unit? GJ.sorts.filter(function(c){return c.u===state.unit}) : GJ.sorts; }
+function poolOrders(){ return state.unit? GJ.orders.filter(function(c){return c.u===state.unit}) : GJ.orders; }
+
+function modeMenu(){
+  var title = state.unit? (state.unit+'. '+unitName(state.unit)) : '전체 단원';
+  var nS = poolSorts().length, nO = poolOrders().length;
+  var modes =
+    tile('📖','배우기','개념 카드를 뒤집으며 익혀요','startLearn') +
+    tile('🔗','짝맞추기','용어와 뜻을 연결해요','startMatch') +
+    (nS? tile('🗂️','분류하기','알맞은 칸으로 옮겨요','startSort') : '') +
+    (nO? tile('🔢','순서맞추기','올바른 순서로 배열해요','startOrder') : '');
+  screen.innerHTML =
+    '<div class="topline"><span>선택: <b style="color:#fff">'+title+'</b></span>'
+    + '<button class="btn ghost sm" onclick="home()">단원 바꾸기</button></div>'
+    + '<div class="modes">'+modes+'</div>'
+    + '<div class="card muted" style="font-size:12.5px;line-height:1.6;margin-top:6px">'
+    + '💡 <b style="color:#fff">배우기</b>를 먼저 한 바퀴 돌린 뒤 게임을 하면 훨씬 쉬워요. '
+    + '게임에서 <b style="color:#22d3ee">콤보</b>를 쌓으면 점수가 2~3배!</div>';
+}
+function tile(ic,t,d,fn){
+  return '<button class="mode" onclick="'+fn+'()"><div class="mi">'+ic+'</div>'
+       + '<div class="mt">'+t+'</div><div class="md">'+d+'</div></button>';
+}
+
+/* ══════════ 1) 배우기 (플래시카드) ══════════ */
+var learn = {};
+function startLearn(){
+  learn.list = shuffle(poolCards()); learn.i = 0; learn.flip=false;
+  renderLearn();
+}
+function renderLearn(){
+  var c = learn.list[learn.i], n=learn.list.length;
+  screen.innerHTML =
+    '<div class="topline"><button class="btn ghost sm" onclick="modeMenu()">← 메뉴</button>'
+    + '<span>배우기 '+(learn.i+1)+' / '+n+'</span></div>'
+    + '<div class="bar"><i style="width:'+((learn.i)/n*100)+'%"></i></div>'
+    + '<div class="flash" id="flash"><div class="inner" id="finner">'
+    +   '<div class="face front"><div class="u">'+esc(unitName(c.u))+'</div>'
+    +     '<div class="term">'+esc(c.t)+'</div>'
+    +     '<div class="hintlbl">눌러서 뜻 확인 ↻</div>'
+    +     '<div class="tapgo">탭 ↺</div></div>'
+    +   '<div class="face back"><div class="u">'+esc(c.t)+'</div>'
+    +     '<div class="def">'+esc(c.d)+'</div>'
+    +     (c.tip?'<div class="tip">💡 '+esc(c.tip)+'</div>':'')
+    +     '<div class="tapgo">탭 ↺</div></div>'
+    + '</div></div>'
+    + '<div class="row">'
+    +   '<button class="btn ghost" onclick="learnPrev()">← 이전</button>'
+    +   '<button class="btn" onclick="learnNext()">'+(learn.i===n-1?'게임하러 가기 →':'다음 →')+'</button>'
+    + '</div>';
+  document.getElementById('flash').onclick=function(){ this.classList.toggle('flip'); };
+  // 힌트 오타 수정용 텍스트 교정
+  var hl=document.querySelector('.hintlbl'); if(hl) hl.textContent='눌러서 뜻 확인 ↻';
+}
+window.learnNext=function(){ if(learn.i>=learn.list.length-1){ FX.banner({icon:'📖',title:'개념 한 바퀴 완료!',sub:'이제 게임으로 확인해 볼까요?',stars:false,btn:'게임 메뉴로 →',onClose:modeMenu}); return;} learn.i++; renderLearn(); };
+window.learnPrev=function(){ if(learn.i>0){ learn.i--; renderLearn(); } };
+
+/* ══════════ 2) 짝맞추기 ══════════ */
+var match={};
+function startMatch(){
+  var all = shuffle(poolCards()).slice(0, Math.min(6, poolCards().length));
+  match.pairs = all;
+  match.left = shuffle(all.map(function(c,i){return {i:i,txt:c.t};}));
+  match.right= shuffle(all.map(function(c,i){return {i:i,txt:c.d};}));
+  match.sel=null; match.done=0; match.miss=0;
+  renderMatch();
+}
+function renderMatch(){
+  var L=match.left.map(function(o){return '<button class="mitem term" data-side="L" data-i="'+o.i+'">'+esc(o.txt)+'</button>';}).join('');
+  var R=match.right.map(function(o){return '<button class="mitem" data-side="R" data-i="'+o.i+'">'+esc(o.txt)+'</button>';}).join('');
+  screen.innerHTML =
+    '<div class="topline"><button class="btn ghost sm" onclick="modeMenu()">← 메뉴</button>'
+    + '<span>짝맞추기 · '+match.pairs.length+'쌍</span></div>'
+    + '<div class="selhint">왼쪽 <b style="color:#fff">용어</b>와 오른쪽 <b style="color:#fff">뜻</b>을 눌러 연결하세요</div>'
+    + '<div class="matchgrid"><div class="mcol">'+L+'</div><div class="mcol">'+R+'</div></div>';
+  Array.prototype.forEach.call(screen.querySelectorAll('.mitem'),function(b){
+    b.onclick=function(){ matchTap(b); };
+  });
+}
+function matchTap(b){
+  if(!match.sel){ match.sel=b; b.classList.add('sel'); return; }
+  if(match.sel===b){ b.classList.remove('sel'); match.sel=null; return; }
+  if(match.sel.dataset.side===b.dataset.side){ // 같은 쪽 재선택
+    match.sel.classList.remove('sel'); match.sel=b; b.classList.add('sel'); return;
+  }
+  var a=match.sel; match.sel=null; a.classList.remove('sel');
+  if(a.dataset.i===b.dataset.i){
+    a.classList.add('done'); b.classList.add('done');
+    FX.ok(b,{base:10}); match.done++;
+    if(match.done===match.pairs.length){
+      setTimeout(function(){ FX.banner({icon:'🔗',title:'모두 연결 완료!',
+        sub:'점수 <b>'+FX.score()+'</b> · 최고 콤보 <b>'+FX.best()+'</b>',
+        stars:FX.starsFor(match.miss),btn:'다시 / 메뉴 →',onClose:modeMenu}); },420);
+    }
+  } else {
+    match.miss++; FX.no(b); a.classList.add('bad'); b.classList.add('bad');
+    setTimeout(function(){ a.classList.remove('bad'); b.classList.remove('bad'); },420);
+  }
+}
+
+/* ══════════ 3) 분류하기 ══════════ */
+var sortG={};
+function startSort(){
+  sortG.sets = shuffle(poolSorts()); sortG.si=0;
+  runSort();
+}
+function runSort(){
+  var s=sortG.sets[sortG.si];
+  sortG.left = shuffle(s.items.slice()); sortG.placed=0; sortG.miss=0;
+  var buckets=s.buckets.map(function(b){
+    return '<div class="bucket" data-key="'+b.key+'"><div class="bh" style="color:'+b.color+'">'+esc(b.label)+'</div>'
+         + '<div class="drop"></div></div>';
+  }).join('');
+  screen.innerHTML =
+    '<div class="topline"><button class="btn ghost sm" onclick="modeMenu()">← 메뉴</button>'
+    + '<span>분류 '+(sortG.si+1)+'/'+sortG.sets.length+'</span></div>'
+    + '<div class="card" style="padding:12px;margin-bottom:10px"><b>'+esc(s.title)+'</b>'
+    + '<div class="muted" style="font-size:12px;margin-top:3px">칩을 눌러 고르고, 알맞은 칸을 누르세요 (드래그도 가능)</div></div>'
+    + '<div class="pool" id="pool">'
+    +   sortG.left.map(function(it,idx){return chip(it,idx);}).join('')
+    + '</div><div class="buckets">'+buckets+'</div>';
+  wireSort(s);
+}
+function chip(it,idx){ return '<span class="chip" draggable="true" data-k="'+esc(it.k)+'" data-idx="'+idx+'">'+esc(it.t)+'</span>'; }
+function wireSort(s){
+  var sel=null;
+  Array.prototype.forEach.call(screen.querySelectorAll('.chip'),function(c){
+    c.onclick=function(){ if(sel)sel.classList.remove('sel'); if(sel===c){sel=null;return;} sel=c; c.classList.add('sel'); };
+    c.ondragstart=function(e){ sel=c; c.classList.add('drag'); e.dataTransfer.setData('t','1'); };
+    c.ondragend=function(){ c.classList.remove('drag'); };
+  });
+  Array.prototype.forEach.call(screen.querySelectorAll('.bucket'),function(bk){
+    bk.onclick=function(){ if(sel){ tryPlace(sel,bk,s); sel=null; } };
+    bk.ondragover=function(e){ e.preventDefault(); bk.classList.add('over'); };
+    bk.ondragleave=function(){ bk.classList.remove('over'); };
+    bk.ondrop=function(e){ e.preventDefault(); bk.classList.remove('over'); var c=screen.querySelector('.chip.drag'); if(c) tryPlace(c,bk,s); };
+  });
+}
+function tryPlace(chipEl,bucket,s){
+  var correct = chipEl.dataset.k === bucket.dataset.key;
+  if(correct){
+    chipEl.classList.remove('sel'); chipEl.setAttribute('draggable','false');
+    chipEl.style.cursor='default'; chipEl.style.borderColor='#34d399';
+    bucket.querySelector('.drop').appendChild(chipEl);
+    FX.ok(chipEl,{base:10}); sortG.placed++;
+    if(sortG.placed===s.items.length){
+      setTimeout(function(){ nextSort(); },420);
+    }
+  } else {
+    sortG.miss++; FX.no(chipEl); chipEl.classList.remove('sel');
+  }
+}
+function nextSort(){
+  var last = sortG.si===sortG.sets.length-1;
+  FX.banner({icon:'🗂️',title:'분류 완료!',
+    sub:(last?'모든 분류를 마쳤어요! ':'')+'점수 <b>'+FX.score()+'</b>',
+    stars:FX.starsFor(sortG.miss),
+    btn: last?'메뉴로 →':'다음 문제 →',
+    onClose:function(){ if(last){ modeMenu(); } else { sortG.si++; runSort(); } }});
+}
+
+/* ══════════ 4) 순서맞추기 ══════════ */
+var ord={};
+function startOrder(){ ord.sets=shuffle(poolOrders()); ord.oi=0; runOrder(); }
+function runOrder(){
+  var o=ord.sets[ord.oi];
+  var mixed=shuffle(o.steps.map(function(s,i){return {s:s,ans:i};}));
+  // 우연히 정답 순서면 한 번 더 섞기
+  var ok=mixed.every(function(m,i){return m.ans===i;});
+  if(ok) mixed=shuffle(mixed);
+  ord.cur=mixed;
+  render_order(o);
+}
+function render_order(o){
+  screen.innerHTML =
+    '<div class="topline"><button class="btn ghost sm" onclick="modeMenu()">← 메뉴</button>'
+    + '<span>순서 '+(ord.oi+1)+'/'+ord.sets.length+'</span></div>'
+    + '<div class="card" style="padding:12px;margin-bottom:10px"><b>'+esc(o.title)+'</b>'
+    + '<div class="muted" style="font-size:12px;margin-top:3px">💡 '+esc(o.hint)+' — 위아래로 끌어 순서를 맞춰요</div></div>'
+    + '<div class="orderlist" id="olist">'
+    +   ord.cur.map(function(m,i){return '<div class="ostep" draggable="true" data-ans="'+m.ans+'"><span class="no">'+(i+1)+'</span>'+esc(m.s)+'</div>';}).join('')
+    + '</div>'
+    + '<button class="btn" onclick="checkOrder()">순서 확인 ✓</button>';
+  wireOrder();
+}
+function wireOrder(){
+  var list=document.getElementById('olist'), dragEl=null;
+  Array.prototype.forEach.call(list.children,function(it){
+    it.ondragstart=function(){ dragEl=it; it.classList.add('drag'); };
+    it.ondragend=function(){ it.classList.remove('drag'); renumber(); };
+    it.ondragover=function(e){ e.preventDefault();
+      var after=belowEl(list,e.clientY);
+      if(after==null) list.appendChild(dragEl); else list.insertBefore(dragEl,after);
+    };
+    // 터치 지원: 탭으로 위/아래 이동
+    it.onclick=function(e){ if(e.target.classList.contains('no')) return; touchMove(it); };
+  });
+  renumber();
+}
+var touchSel=null;
+function touchMove(it){
+  if(!touchSel){ touchSel=it; it.style.outline='2px solid #22d3ee'; return; }
+  if(touchSel===it){ it.style.outline=''; touchSel=null; return; }
+  var list=document.getElementById('olist');
+  var items=Array.prototype.slice.call(list.children);
+  var a=items.indexOf(touchSel), b=items.indexOf(it);
+  if(a<b) list.insertBefore(touchSel, it.nextSibling); else list.insertBefore(touchSel, it);
+  touchSel.style.outline=''; touchSel=null; renumber();
+}
+function belowEl(list,y){
+  var els=Array.prototype.slice.call(list.querySelectorAll('.ostep:not(.drag)'));
+  var closest={o:-Infinity,e:null};
+  els.forEach(function(c){ var box=c.getBoundingClientRect(); var off=y-box.top-box.height/2;
+    if(off<0&&off>closest.o){ closest={o:off,e:c}; } });
+  return closest.e;
+}
+function renumber(){ var l=document.getElementById('olist'); Array.prototype.forEach.call(l.children,function(it,i){ it.querySelector('.no').textContent=i+1; }); }
+window.checkOrder=function(){
+  var list=document.getElementById('olist'); var items=Array.prototype.slice.call(list.children);
+  var wrong=0;
+  items.forEach(function(it,i){ it.classList.remove('ok');
+    if(parseInt(it.dataset.ans,10)===i){ it.classList.add('ok'); } else { wrong++; } });
+  if(wrong===0){
+    FX.ok(list,{base:20,n:16});
+    var last=ord.oi===ord.sets.length-1;
+    setTimeout(function(){ FX.banner({icon:'🔢',title:'순서 정답!',
+      sub:(last?'모든 순서 문제 완료! ':'')+'점수 <b>'+FX.score()+'</b>',
+      stars:3,btn:last?'메뉴로 →':'다음 →',
+      onClose:function(){ if(last){modeMenu();} else {ord.oi++; runOrder();} }}); },420);
+  } else {
+    FX.no(list); FX.flash('rgba(251,113,133,.4)');
+  }
+};
+
+/* 시작 */
+window.home=home; window.modeMenu=modeMenu;
+window.startLearn=startLearn; window.startMatch=startMatch;
+window.startSort=startSort; window.startOrder=startOrder;
+home();
+</script>
+</body>
+</html>

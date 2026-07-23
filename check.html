@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>공조 마스터 · 점검 CBT</title>
+<style>
+  :root{ --bg:#070d1c; --panel:#0d1a33; --panel2:#111f3d; --line:#243456;
+         --ink:#eaf1ff; --dim:#9db0d6; --acc:#22d3ee; --ok:#34d399; --no:#fb7185; }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:radial-gradient(1200px 700px at 50% -10%,#12234a,#070d1c 60%);
+       color:var(--ink);font-family:system-ui,"Segoe UI",Roboto,"Malgun Gothic",sans-serif;
+       min-height:100vh;-webkit-tap-highlight-color:transparent}
+  .wrap{max-width:720px;margin:0 auto;padding:16px 14px 90px}
+  header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  header .logo{font-size:24px}
+  header h1{font-size:18px;margin:0;font-weight:900}
+  header .sp{flex:1}
+  .homebtn{border:1px solid var(--line);background:var(--panel);color:var(--dim);
+    border-radius:10px;padding:8px 12px;font-size:12.5px;font-weight:800;cursor:pointer;text-decoration:none}
+  .muted{color:var(--dim)}
+  .card{background:linear-gradient(160deg,var(--panel),#0b1730);border:1px solid var(--line);
+    border-radius:18px;padding:16px}
+  .btn{border:0;border-radius:13px;padding:13px;font-size:15px;font-weight:900;font-family:inherit;
+    cursor:pointer;background:linear-gradient(135deg,#0ea5e9,#2563eb);color:#fff;width:100%}
+  .btn:active{transform:translateY(1px)}
+  .btn.ghost{background:var(--panel);border:1px solid var(--line);color:var(--ink)}
+  .btn.sm{width:auto;padding:9px 14px;font-size:13px}
+  .btn:disabled{opacity:.5}
+  .row{display:flex;gap:8px}
+
+  /* 설정 */
+  .sechead{display:flex;align-items:center;gap:8px;margin:16px 4px 8px}
+  .sechead b{font-size:13px;color:var(--dim);font-weight:800}
+  .sechead .ln{flex:1;height:1px;background:var(--line)}
+  .uwrap{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+  .uchk{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:11px 12px;
+    cursor:pointer;font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:8px;transition:.12s}
+  .uchk .bx{width:20px;height:20px;border-radius:6px;border:2px solid var(--line);display:flex;
+    align-items:center;justify-content:center;font-size:13px;color:#fff;flex:none}
+  .uchk.on{border-color:var(--acc);background:#0e2233}
+  .uchk.on .bx{background:var(--acc);border-color:var(--acc)}
+  .uchk.all{grid-column:1/-1}
+  .pills{display:flex;gap:8px;flex-wrap:wrap}
+  .pill{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:9px 16px;
+    font-size:13.5px;font-weight:800;cursor:pointer}
+  .pill.on{border-color:var(--acc);background:#0e2233;color:var(--acc)}
+
+  /* 퀴즈 */
+  .topline{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;
+    font-size:12.5px;color:var(--dim);font-weight:700}
+  .bar{height:8px;background:#0a1730;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-bottom:14px}
+  .bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#22d3ee,#3b82f6);transition:width .3s}
+  .qtag{display:inline-block;font-size:11px;font-weight:800;color:var(--acc);
+    background:#0e2233;border:1px solid #1c3a4d;border-radius:999px;padding:3px 10px;margin-bottom:10px}
+  .qtext{font-size:17.5px;font-weight:800;line-height:1.5;margin-bottom:14px}
+  .choices{display:flex;flex-direction:column;gap:10px}
+  .choice{border:1px solid var(--line);background:var(--panel);border-radius:13px;padding:14px;
+    font-size:15px;cursor:pointer;text-align:left;line-height:1.45;transition:.12s;display:flex;gap:10px;align-items:flex-start}
+  .choice .lab{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;flex:none;color:var(--dim)}
+  .choice:active{transform:scale(.99)}
+  .choice.pick{border-color:var(--acc);background:#0e2233}
+  .choice.correct{border-color:var(--ok);background:#0f2c22}
+  .choice.correct .lab{background:var(--ok);border-color:var(--ok);color:#04120c}
+  .choice.wrong{border-color:var(--no);background:#2c1220}
+  .choice.wrong .lab{background:var(--no);border-color:var(--no);color:#2c0a12}
+  .choice.lock{pointer-events:none}
+  .expl{margin-top:14px;border:1px solid var(--line);background:#0a1526;border-radius:13px;padding:13px;
+    font-size:13.5px;line-height:1.6;display:none}
+  .expl.show{display:block}
+  .expl b{color:var(--acc)}
+
+  /* 결과 */
+  .center{text-align:center}
+  .scorebig{font-size:52px;font-weight:900;line-height:1}
+  .grade{font-size:16px;font-weight:800;margin-top:6px}
+  .stat{display:flex;gap:10px;margin:14px 0}
+  .stat .b{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+  .stat .b b{display:block;font-size:20px;font-weight:900}
+  .stat .b span{font-size:11px;color:var(--dim)}
+  .review .item{border:1px solid var(--line);border-radius:13px;padding:13px;margin-bottom:10px;background:var(--panel)}
+  .review .q{font-size:14px;font-weight:800;line-height:1.5;margin-bottom:8px}
+  .review .a{font-size:13px;line-height:1.5;margin:3px 0}
+  .review .a.mine{color:var(--no)}
+  .review .a.right{color:var(--ok)}
+  .review .e{font-size:12.5px;color:var(--dim);margin-top:6px;line-height:1.55}
+  .hide{display:none!important}
+  .toolbadge{font-size:12px;color:var(--dim);margin-top:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="logo">📝</span>
+    <h1>공조 마스터 <span class="muted" style="font-weight:700;font-size:13px">· 점검 CBT</span></h1>
+    <span class="sp"></span>
+    <a class="homebtn" href="index.html">← 허브</a>
+  </header>
+  <div id="screen"></div>
+</div>
+
+<!-- 결과 제출 위젯 (교사 URL은 링크 뒤 ?rc=... 로 넣거나 data-endpoint에 채움) -->
+<script src="https://hongyul67-cpu.github.io/links/collector.js"
+        data-tool="공기조화설비 점검"
+        data-classes="1,2,3,4,5,6,7,8,9,10"
+        data-max-num="40"></script>
+
+<script src="data.js"></script>
+<script>
+"use strict";
+var GJ = window.GJ;
+var screen = document.getElementById('screen');
+var LABS = ['①','②','③','④'];
+
+function esc(s){ return String(s).replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c];}); }
+function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;} return a; }
+function unitName(u){ var m=GJ.units.filter(function(x){return x.id===u})[0]; return m?m.name:''; }
+
+var cfg = { units:{}, count:10, mode:'each' };  // mode: each(문항별 즉시채점) / end(마지막에 채점)
+GJ.units.forEach(function(u){ cfg.units[u.id]=true; });
+
+/* ══════════ 설정 화면 ══════════ */
+function setup(){
+  var urows = GJ.units.map(function(u){
+    var n=GJ.quiz.filter(function(q){return q.u===u.id}).length;
+    return '<div class="uchk'+(cfg.units[u.id]?' on':'')+'" data-u="'+u.id+'" onclick="toggleU('+u.id+')">'
+      + '<div class="bx">'+(cfg.units[u.id]?'✓':'')+'</div>'
+      + '<div>'+u.icon+' '+u.id+'. '+esc(u.name)+' <span class="muted" style="font-weight:600">('+n+')</span></div></div>';
+  }).join('');
+  screen.innerHTML =
+    '<div class="card center" style="margin-bottom:14px">'
+    + '<div style="font-size:40px">📝</div>'
+    + '<div style="font-size:19px;font-weight:900;margin-top:4px">공기조화설비 실력 점검</div>'
+    + '<div class="muted" style="font-size:13px;margin-top:6px;line-height:1.6">범위와 문항 수를 고르고 시작하세요.<br>끝나면 점수·오답노트가 나오고 결과를 제출할 수 있어요.</div></div>'
+    + '<div class="sechead"><b>출제 범위</b><span class="ln"></span></div>'
+    + '<div class="uwrap">'
+    + '<div class="uchk all" onclick="toggleAll()"><div class="bx" id="allbx"></div><div><b>전체 선택 / 해제</b></div></div>'
+    + urows + '</div>'
+    + '<div class="sechead"><b>문항 수</b><span class="ln"></span></div>'
+    + '<div class="pills" id="cntpills">'
+    +   [5,10,20,0].map(function(n){return '<button class="pill'+(cfg.count===n?' on':'')+'" onclick="setCount('+n+')">'+(n===0?'전체':n+'문항')+'</button>';}).join('')
+    + '</div>'
+    + '<div class="sechead"><b>채점 방식</b><span class="ln"></span></div>'
+    + '<div class="pills">'
+    +   '<button class="pill'+(cfg.mode==='each'?' on':'')+'" onclick="setMode(\'each\')">문항별 바로 채점</button>'
+    +   '<button class="pill'+(cfg.mode==='end'?' on':'')+'" onclick="setMode(\'end\')">마지막에 한 번에</button>'
+    + '</div>'
+    + '<div style="height:16px"></div>'
+    + '<button class="btn" id="startbtn" onclick="start()">시작하기 →</button>'
+    + '<div class="muted center" id="avail" style="font-size:12px;margin-top:8px"></div>';
+  updateAvail();
+}
+window.toggleU=function(u){ cfg.units[u]=!cfg.units[u]; setup(); };
+window.toggleAll=function(){ var any=GJ.units.some(function(u){return cfg.units[u.id];}); GJ.units.forEach(function(u){cfg.units[u.id]=!any;}); setup(); };
+window.setCount=function(n){ cfg.count=n; setup(); };
+window.setMode=function(m){ cfg.mode=m; setup(); };
+function selectedQ(){ return GJ.quiz.filter(function(q){return cfg.units[q.u];}); }
+function updateAvail(){
+  var allOn=GJ.units.every(function(u){return cfg.units[u.id];});
+  var allbx=document.getElementById('allbx');
+  if(allbx){ allbx.textContent=allOn?'✓':''; allbx.parentNode.classList.toggle('on',allOn); }
+  var tot=selectedQ().length;
+  var av=document.getElementById('avail'); var sb=document.getElementById('startbtn');
+  if(tot===0){ av.textContent='범위를 하나 이상 선택하세요.'; sb.disabled=true; }
+  else { var use=cfg.count===0?tot:Math.min(cfg.count,tot); av.textContent='선택 범위 '+tot+'문항 중 '+use+'문항 출제'; sb.disabled=false; }
+}
+
+/* ══════════ 퀴즈 진행 ══════════ */
+var game={};
+window.start=function(){
+  var pool=selectedQ(); if(!pool.length) return;
+  var use=cfg.count===0?pool.length:Math.min(cfg.count,pool.length);
+  game.qs=shuffle(pool).slice(0,use).map(function(q){
+    // 보기 순서도 섞기(정답 인덱스 추적)
+    var order=shuffle([0,1,2,3]);
+    return { u:q.u, q:q.q, choices:order.map(function(i){return q.c[i];}),
+             ans:order.indexOf(q.a), e:q.e, pick:null };
+  });
+  game.i=0; game.correct=0; game.t0=Date.now();
+  renderQ();
+};
+function renderQ(){
+  var g=game, q=g.qs[g.i], n=g.qs.length;
+  screen.innerHTML =
+    '<div class="topline"><button class="btn ghost sm" onclick="setup()">← 나가기</button>'
+    + '<span>문항 '+(g.i+1)+' / '+n+' · 맞은 개수 '+g.correct+'</span></div>'
+    + '<div class="bar"><i style="width:'+(g.i/n*100)+'%"></i></div>'
+    + '<div class="card">'
+    +   '<span class="qtag">'+q.u+'. '+esc(unitName(q.u))+'</span>'
+    +   '<div class="qtext">'+esc(q.q)+'</div>'
+    +   '<div class="choices" id="choices">'
+    +     q.choices.map(function(c,i){return '<button class="choice" data-i="'+i+'" onclick="pick('+i+')">'
+    +       '<span class="lab">'+LABS[i]+'</span><span>'+esc(c)+'</span></button>';}).join('')
+    +   '</div>'
+    +   '<div class="expl" id="expl"></div>'
+    + '</div>'
+    + '<div class="row" style="margin-top:12px">'
+    +   '<button class="btn hide" id="nextbtn" onclick="next()">'+(g.i===n-1?'채점 결과 보기 →':'다음 문항 →')+'</button>'
+    + '</div>';
+}
+window.pick=function(i){
+  var g=game, q=g.qs[g.i];
+  if(q.pick!==null && cfg.mode==='each') return;   // each모드는 한 번만
+  q.pick=i;
+  var choices=screen.querySelectorAll('.choice');
+
+  if(cfg.mode==='each'){
+    Array.prototype.forEach.call(choices,function(c){ c.classList.add('lock'); });
+    var correct = i===q.ans;
+    if(correct){ choices[i].classList.add('correct'); g.correct++; }
+    else { choices[i].classList.add('wrong'); choices[q.ans].classList.add('correct'); }
+    var ex=document.getElementById('expl');
+    ex.innerHTML='<b>'+(correct?'정답! ✓':'해설')+'</b> '+esc(q.e);
+    ex.classList.add('show');
+    document.getElementById('nextbtn').classList.remove('hide');
+  } else {
+    // end 모드: 선택 표시만
+    Array.prototype.forEach.call(choices,function(c){ c.classList.remove('pick'); });
+    choices[i].classList.add('pick');
+    document.getElementById('nextbtn').classList.remove('hide');
+  }
+};
+window.next=function(){
+  var g=game;
+  if(g.i<g.qs.length-1){ g.i++; renderQ(); }
+  else { finish(); }
+};
+function finish(){
+  var g=game;
+  // end 모드는 여기서 채점
+  if(cfg.mode==='end'){ g.correct=0; g.qs.forEach(function(q){ if(q.pick===q.ans) g.correct++; }); }
+  var n=g.qs.length, score=Math.round(g.correct/n*100);
+  var dur=Math.round((Date.now()-g.t0)/1000);
+  var grade = score>=90?'훌륭해요! 🏆':score>=70?'잘했어요 👍':score>=50?'조금 더! 💪':'복습이 필요해요 📖';
+  var wrong=g.qs.filter(function(q){return q.pick!==q.ans;});
+
+  var review = wrong.length? wrong.map(function(q){
+    var mine=q.pick==null?'(무응답)':LABS[q.pick]+' '+esc(q.choices[q.pick]);
+    return '<div class="item"><div class="q">'+q.u+'단원 · '+esc(q.q)+'</div>'
+      + '<div class="a mine">내 답: '+mine+'</div>'
+      + '<div class="a right">정답: '+LABS[q.ans]+' '+esc(q.choices[q.ans])+'</div>'
+      + '<div class="e">💡 '+esc(q.e)+'</div></div>';
+  }).join('') : '<div class="card center muted" style="padding:20px">전부 정답! 오답이 없어요 🎉</div>';
+
+  screen.innerHTML =
+    '<div class="card center">'
+    + '<div class="scorebig" style="color:'+(score>=70?'#34d399':score>=50?'#fbbf24':'#fb7185')+'">'+score+'<span style="font-size:22px">점</span></div>'
+    + '<div class="grade">'+grade+'</div>'
+    + '<div class="stat"><div class="b"><b style="color:#34d399">'+g.correct+'</b><span>맞음</span></div>'
+    +   '<div class="b"><b style="color:#fb7185">'+(n-g.correct)+'</b><span>틀림</span></div>'
+    +   '<div class="b"><b>'+dur+'s</b><span>소요</span></div></div>'
+    + '<button class="btn" onclick="submitResult('+g.correct+','+n+','+dur+')">📤 결과 제출하기</button>'
+    + '<div class="row" style="margin-top:8px">'
+    +   '<button class="btn ghost" onclick="start()">다시 풀기 🔁</button>'
+    +   '<button class="btn ghost" onclick="setup()">범위 바꾸기</button></div>'
+    + '</div>'
+    + '<div class="sechead"><b>오답노트 ('+wrong.length+')</b><span class="ln"></span></div>'
+    + '<div class="review">'+review+'</div>';
+  game.wrongNums = wrong.map(function(q,i){return i+1;}); // 참고용
+}
+window.submitResult=function(correct,total,dur){
+  if(!window.ResultCollector){ alert('제출 기능을 불러오지 못했습니다. 인터넷 연결을 확인하세요.'); return; }
+  var score=Math.round(correct/total*100);
+  ResultCollector.open({ score:score, correct:correct, total:total, durationSec:dur });
+};
+
+/* 시작 */
+window.setup=setup;
+setup();
+</script>
+</body>
+</html>
