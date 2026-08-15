@@ -78,6 +78,11 @@
   .fig{background:#081226;border:1px solid var(--line);border-radius:14px;padding:12px;margin:12px 0}
   .fig svg{display:block;width:100%;height:auto}
   .figcap{text-align:center;font-size:12.5px;color:var(--dim);margin-top:8px}
+  .figimg{background:#f7fafc;border-radius:10px;padding:10px;text-align:center;margin:0}
+  .figimg img{max-width:100%;max-height:300px;height:auto;border-radius:4px}
+  .imgrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+  .imgrow .figcap{margin-top:6px}
+  @media(max-width:640px){.imgrow{grid-template-columns:1fr}}
 
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   @media(max-width:640px){.grid2{grid-template-columns:1fr}.stitle{font-size:22px}.slide{padding:18px 16px 22px}}
@@ -501,6 +506,15 @@ var SLIDES = [
 </div>
 <div class="keyrow"><span class="k">C=Compressor · F=Fan · E=Evaporator · S.V=Solenoid Valve</span></div>`},
 
+{u:4,t:"표준 냉동 시스템 계통도",html:
+`<div class="ssub">실제 냉동 실험장치의 계통도입니다. 부품과 출력 단자를 함께 봅니다.</div>
+<div class="figimg"><img src="img/refrig-system.jpg" alt="표준 냉동 시스템 계통도"></div>
+<table class="tbl">
+<tr><th>단자</th><th>의미</th><th>단자</th><th>의미</th></tr>
+<tr><td><b>COMP</b></td><td>압축기 모터</td><td><b>EFM</b></td><td>증발기 팬 모터</td></tr>
+<tr><td><b>CFM</b></td><td>응축기 팬 모터</td><td><b>S.V</b></td><td>주배관 전자밸브</td></tr>
+</table>`},
+
 {u:4,t:"공기조화기(AHU)의 구성",html:
 `<div class="ssub">외기·환기를 받아 순서대로 다듬어 실로 보냅니다.</div>
 <div class="fig"><svg viewBox="0 0 620 150">
@@ -615,6 +629,13 @@ var SLIDES = [
 <tr><td><b class="hl-r">인터록</b></td><td>둘 중 <span class="hl-r">하나만</span> 동작, 상대 b접점으로 서로 차단(선입 우선)</td></tr>
 </table>`},
 
+{u:5,t:"실제 회로도 — 자기유지 · 인터록",html:
+`<div class="ssub">시험에 나오는 실제 회로도입니다. 이름과 동작을 눈에 익히세요.</div>
+<div class="imgrow">
+  <div><div class="figimg"><img src="img/self-hold.png" alt="자기유지 회로도"></div><div class="figcap">자기유지 — PB1 기동, PB2 정지, Ry-a로 유지</div></div>
+  <div><div class="figimg"><img src="img/interlock.png" alt="인터록 회로도"></div><div class="figcap">인터록 — PB1→Ry1·RL, PB2→Ry2·GL, 서로 차단</div></div>
+</div>`},
+
 {u:5,t:"시퀀스 회로 ③ 지연동작 · ④ 일정시간동작",html:
 `<div class="ssub">둘 다 타이머를 쓰지만 '늦는 지점'이 다릅니다.</div>
 <div class="fig"><svg viewBox="0 0 620 190">
@@ -642,6 +663,14 @@ var SLIDES = [
 <tr><td><b class="hl-a">지연동작</b></td><td>설정시간 뒤 <span class="hl-a">늦게</span></td><td>입력과 함께</td></tr>
 <tr><td><b class="hl-g">일정시간동작</b></td><td>입력과 <span class="hl-g">동시</span></td><td>설정시간 뒤 늦게</td></tr>
 </table>`},
+
+{u:5,t:"실제 회로도 — 지연동작 · 일정시간동작",html:
+`<div class="ssub">두 회로의 회로도와 타임차트를 비교해 보세요.</div>
+<div class="imgrow">
+  <div><div class="figimg"><img src="img/delay.png" alt="지연동작 회로도"></div><div class="figcap">지연동작 — 설정 시간 뒤 늦게 ON</div></div>
+  <div><div class="figimg"><img src="img/fixedtime.png" alt="일정시간동작 회로도"></div><div class="figcap">일정시간동작 — 동시에 ON, 시간 뒤 OFF</div></div>
+</div>
+<div class="defbox">공통 소자는 <span class="hl-a">타이머(T)</span> — '늦는 지점'만 다르다.</div>`},
 
 {u:5,t:"공조용 자동제어기기",html:
 `<table class="tbl">
