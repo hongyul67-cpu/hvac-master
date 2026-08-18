@@ -329,9 +329,18 @@ function finish(){
 window.submitResult=function(correct,total,dur){
   if(!window.ResultCollector){ alert('제출 기능을 불러오지 못했습니다. 인터넷 연결을 확인하세요.'); return; }
   var score=Math.round(correct/total*100);
-  /* 랭킹전 — 점검 채점 후 RP 정산 */
+  /* 랭킹전 — 점검 채점 후 RP 정산 (다른 세션 작업 유지) */
   if(window.RankKit) RankKit.award(score,'공기조화설비 점검');
-  ResultCollector.open({ score:score, correct:correct, total:total, durationSec:dur });
+  /* 어느 범위를 풀었는지 mode 로 남긴다 (규약 §1 ①) */
+  var sel = GJ.units.filter(function(u){ return cfg.units[u.id]; });
+  var partName = (sel.length === GJ.units.length) ? '전체'
+    : sel.map(function(u){ return u.name || u.title || ('단원'+u.id); }).join('·');
+  if (partName.length > 24) partName = partName.slice(0, 23) + '\u2026';
+  ResultCollector.open({
+    score:score, correct:correct, total:total, durationSec:dur,
+    mode:'공기조화설비 — ' + partName + ' 점검',
+    extra:['공기조화 설비 개념 이해']
+  });
 };
 
 /* 시작 */
