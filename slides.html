@@ -122,6 +122,36 @@
   .cta.g{background:var(--panel);border:1px solid var(--line);color:var(--ink)}
   ul.clean{margin:10px 0;padding-left:20px;line-height:1.8;font-size:15px}
   ul.clean li{margin-bottom:4px}
+
+  /* ── 빈칸 (수업 중 함께 채우기) ── */
+  .bl{position:relative;display:inline-block;min-width:2.4em;color:transparent!important;
+    border-bottom:3px solid var(--amber);background:rgba(251,191,36,.12);
+    border-radius:5px 5px 0 0;padding:0 .25em;margin:0 .05em;cursor:pointer;
+    font-weight:800;transition:.16s}
+  .bl::before{content:"?";position:absolute;left:0;right:0;text-align:center;
+    color:var(--amber);opacity:.75;font-weight:900}
+  .bl:hover{background:rgba(251,191,36,.26)}
+  .bl.next{box-shadow:0 0 0 3px rgba(251,191,36,.45);animation:blpulse 1.6s infinite}
+  @keyframes blpulse{0%,100%{box-shadow:0 0 0 3px rgba(251,191,36,.45)}50%{box-shadow:0 0 0 7px rgba(251,191,36,.10)}}
+  /* 열린 빈칸 — 원래 글자색은 그대로, 초록 밑줄로 '방금 열림' 표시 */
+  .op{background:rgba(52,211,153,.18);border-bottom:3px solid var(--green);
+    border-radius:5px 5px 0 0;padding:0 .25em;animation:blpop .32s cubic-bezier(.34,1.56,.64,1)}
+  @keyframes blpop{0%{transform:scale(.72)}100%{transform:scale(1)}}
+
+  /* ── 발문 (선생님 질문) ── */
+  .askbox{display:none;margin-top:16px;background:#1b1509;border:1px solid #6b5417;
+    border-left:5px solid var(--amber);border-radius:0 14px 14px 0;padding:14px 16px}
+  body.showask .askbox{display:block;animation:sin .28s ease}
+  .askbox .ah{font-size:12px;font-weight:900;color:var(--amber);letter-spacing:.5px;margin-bottom:8px}
+  .askbox ul{margin:0;padding-left:20px}
+  .askbox li{font-size:15px;line-height:1.65;color:#f8ecc6;font-weight:700;margin-bottom:7px}
+  .askbox li:last-child{margin-bottom:0}
+
+  /* 토글 버튼 활성 상태 · 빈칸 진행 표시 */
+  .iconbtn.act{background:var(--amber);border-color:var(--amber);color:#241a02}
+  .navbl{flex:none;border:1px solid var(--amber);background:rgba(251,191,36,.14);color:var(--amber);
+    border-radius:12px;padding:11px 14px;font-size:13.5px;font-weight:900;font-family:inherit;cursor:pointer}
+  .navbl:disabled{opacity:.4}
 </style>
 </head>
 <body>
@@ -130,6 +160,8 @@
   <span class="ttl">🌬️ 수업 슬라이드</span>
   <span class="sp"></span>
   <div class="chips" id="chips"></div>
+  <button class="iconbtn" id="clozeBtn" title="빈칸 모드 (B)">␣</button>
+  <button class="iconbtn" id="askBtn" title="발문 보기 (Q)">💬</button>
   <button class="iconbtn" id="fs" title="전체화면">⛶</button>
 </div>
 <div class="pbar"><i id="pbar"></i></div>
@@ -139,6 +171,7 @@
 <div class="nav">
   <button class="mv" id="prev">← 이전</button>
   <span class="count" id="count"></span>
+  <button class="navbl hide" id="revealBtn">빈칸 열기</button>
   <button class="mv" id="next">다음 →</button>
 </div>
 
@@ -266,6 +299,32 @@ var SLIDES = [
 </svg><div class="figcap">습공기선도 — 온도·습도·엔탈피의 관계를 한 장으로</div></div>
 <div class="keyrow"><span class="k"><b>엔탈피</b> = 현열 + 잠열, 공기의 총 열량</span></div>`},
 
+{u:1,t:"실내 공기질 — 왜 환기가 필요한가",html:
+`<div class="lead">사람이 모인 방은 <span class="hl-r">CO₂</span>가 쌓입니다. 공조에서 <span class="hl">청정도</span>를 다루는 이유입니다.</div>
+<div class="fig"><svg viewBox="0 0 620 150">
+  <text x="20" y="24" class="s-cap">실내 CO₂ 농도(ppm)</text>
+  <rect x="20" y="36" width="140" height="34" rx="6" fill="#0b2019" stroke="#34d399" stroke-width="2"/>
+  <text x="90" y="58" text-anchor="middle" class="s-lab" font-size="13" fill="#34d399">~700 쾌적</text>
+  <rect x="170" y="36" width="150" height="34" rx="6" fill="#3a2f10" stroke="#fbbf24" stroke-width="2"/>
+  <text x="245" y="58" text-anchor="middle" class="s-lab" font-size="13" fill="#fbbf24">1000 기준치</text>
+  <rect x="330" y="36" width="140" height="34" rx="6" fill="#2c1220" stroke="#fb7185" stroke-width="2"/>
+  <text x="400" y="58" text-anchor="middle" class="s-lab" font-size="13" fill="#fb7185">2000 졸림·두통</text>
+  <rect x="480" y="36" width="120" height="34" rx="6" fill="#2c1220" stroke="#fb7185" stroke-width="2"/>
+  <text x="540" y="58" text-anchor="middle" class="s-lab" font-size="13" fill="#fb7185">3000↑ 위험</text>
+  <text x="20" y="100" class="s-cap">사람이 들어오면 ↑</text>
+  <path d="M150 95 L300 95" stroke="#fb7185" stroke-width="3" marker-end="url(#aq1)"/>
+  <text x="330" y="100" class="s-lab" font-size="12" fill="#34d399">환기하면 ↓</text>
+  <path d="M470 95 L590 95" stroke="#34d399" stroke-width="3" marker-end="url(#aq1)"/>
+  <text x="20" y="135" class="s-dim" font-size="12">교실 30명 × 25 m³/h = 필요 환기량 약 750 m³/h</text>
+  <defs><marker id="aq1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#9db0d6"/></marker></defs>
+</svg><div class="figcap">사람 수가 늘수록 CO₂는 오르고, 환기하면 내려간다</div></div>
+<table class="tbl">
+<tr><th>오염 요소</th><th>주된 원인</th><th>대책</th></tr>
+<tr><td>CO₂</td><td>{{사람의 호흡}}</td><td>{{환기량 확보}}</td></tr>
+<tr><td>미세먼지</td><td>외기 유입·실내 활동</td><td>{{공기여과기(필터)}}</td></tr>
+<tr><td>냄새·유해가스</td><td>건축자재·조리</td><td>국소배기·환기</td></tr>
+</table>`},
+
 /* ═══════════ 단원 2 · 부하 ═══════════ */
 {u:2,t:"열부하란?",html:
 `<div class="lead">적정 온·습도를 지키려고 <span class="hl">공급하거나 제거해야 하는 열량</span>이 열부하(공기조화부하)입니다.</div>
@@ -306,7 +365,7 @@ var SLIDES = [
     <marker id="arf2" markerWidth="9" markerHeight="9" refX="1" refY="3" orient="auto"><path d="M7,0 L0,3 L7,6 Z" fill="#34d399"/></marker>
   </defs>
 </svg><div class="figcap">건물 단면으로 본 부하의 통로</div></div>
-<div class="keyrow"><span class="k"><b>실내부하</b> 외벽·유리·틈새·사람·기기</span><span class="k"><b>장치부하</b> 송풍기·덕트</span><span class="k"><b>외기부하</b>·<b>재열부하</b></span></div>`},
+<div class="keyrow"><span class="k"><b>실내부하</b> 외벽·유리·틈새·{{사람·기기}}</span><span class="k"><b>장치부하</b> {{송풍기·덕트}}</span><span class="k">{{외기부하}}·{{재열부하}}</span></div>`},
 
 {u:2,t:"냉방·난방 부하 계산 포함 여부",html:
 `<div class="ssub">같은 요소라도 냉방이냐 난방이냐에 따라 계산에 넣는지가 다릅니다.</div>
@@ -342,6 +401,24 @@ var SLIDES = [
 </table>
 <div class="keyrow"><span class="k"><b>TAC 온도</b>: 위험률(%)로 정한 설계용 외기온도</span></div>
 </div></div>`},
+
+{u:2,t:"부하 계산 해보기 — 예제",html:
+`<div class="ssub">식에 숫자를 넣어 한 번 풀어 봅시다. (공기 밀도 1.2 kg/m³, 비열 1.0 kJ/kg·K)</div>
+<div class="defbox" style="border-color:#fb7185">
+<b>문제</b> — 송풍량 <b>1,000 m³/h</b>의 공기를 <b>30℃ → 18℃</b>로 냉각할 때 필요한 현열량은?</div>
+<table class="tbl">
+<tr><th style="width:16%">단계</th><th>계산</th><th class="c">결과</th></tr>
+<tr><td>① 질량유량</td><td>1,000 m³/h × 1.2 kg/m³</td><td class="c">{{1,200 kg/h}}</td></tr>
+<tr><td>② 온도차</td><td>30℃ − 18℃</td><td class="c">{{12 ℃}}</td></tr>
+<tr><td>③ 현열량</td><td>Qs = 1,200 × 1.0 × 12</td><td class="c">{{14,400 kJ/h}}</td></tr>
+<tr><td>④ 환산</td><td>14,400 ÷ 3,600</td><td class="c">{{약 4 kW}}</td></tr>
+</table>
+<div class="grid2">
+<div class="defbox" style="border-color:#34d399"><b>덤 문제</b><br>학생 <b>30명</b> 교실의 필요 환기량은?<br>
+30명 × 25 m³/h = <b>{{750 m³/h}}</b></div>
+<div class="defbox" style="border-color:#fbbf24"><b>기억할 점</b><br>
+현열은 <b>온도차</b>, 잠열은 <b>절대습도차</b>가 핵심.<br>단위(h ↔ s)를 꼭 확인!</div>
+</div>`},
 
 /* ═══════════ 단원 3 · 설비 ═══════════ */
 {u:3,t:"공기조화설비의 4대 구성",html:
@@ -427,11 +504,38 @@ var SLIDES = [
 </svg></div>
 <table class="tbl">
 <tr><th>종류</th><th>구성</th><th>실내압</th><th>용도</th></tr>
-<tr><td><b>1종</b></td><td>급기팬 + 배기팬</td><td class="c">조절 자유</td><td>극장·큰 실</td></tr>
-<tr><td><b>2종</b></td><td>급기팬 + 자연배기</td><td class="c yes">정압(+)</td><td>클린룸·수술실</td></tr>
-<tr><td><b>3종</b></td><td>자연급기 + 배기팬</td><td class="c no">부압(−)</td><td>화장실·주방</td></tr>
+<tr><td><b>1종</b></td><td>급기팬 + 배기팬</td><td class="c">조절 자유</td><td>{{극장·큰 실}}</td></tr>
+<tr><td><b>2종</b></td><td>{{급기팬}} + 자연배기</td><td class="c yes">{{정압(+)}}</td><td>{{클린룸·수술실}}</td></tr>
+<tr><td><b>3종</b></td><td>자연급기 + {{배기팬}}</td><td class="c no">{{부압(−)}}</td><td>{{화장실·주방}}</td></tr>
 </table>
 <div class="tblcap">밀어넣으면(급기) 정압, 빨아내면(배기) 부압</div>`},
+
+{u:3,t:"덕트와 취출구 — 공기가 나오는 길",html:
+`<div class="lead">공조기에서 만든 공기는 <span class="hl">덕트</span>를 타고 와서 <span class="hl-g">취출구</span>로 나오고, <span class="hl-a">흡입구</span>로 되돌아갑니다.</div>
+<div class="fig"><svg viewBox="0 0 620 190">
+  <defs><marker id="ad1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#38bdf8"/></marker></defs>
+  <rect x="20" y="60" width="80" height="60" rx="8" fill="#0b2019" stroke="#34d399" stroke-width="2"/>
+  <text x="60" y="95" text-anchor="middle" class="s-lab" font-size="12">공조기</text>
+  <rect x="100" y="72" width="330" height="26" fill="#12233f" stroke="#38bdf8" stroke-width="2"/>
+  <text x="265" y="66" text-anchor="middle" class="s-cap">덕트 (각형·원형)</text>
+  <path d="M180 98 L180 122" stroke="#38bdf8" stroke-width="3" marker-end="url(#ad1)"/>
+  <path d="M300 98 L300 122" stroke="#38bdf8" stroke-width="3" marker-end="url(#ad1)"/>
+  <path d="M410 98 L410 122" stroke="#38bdf8" stroke-width="3" marker-end="url(#ad1)"/>
+  <text x="180" y="140" text-anchor="middle" class="s-lab" font-size="11" fill="#34d399">취출구</text>
+  <text x="300" y="140" text-anchor="middle" class="s-lab" font-size="11" fill="#34d399">취출구</text>
+  <text x="410" y="140" text-anchor="middle" class="s-lab" font-size="11" fill="#34d399">취출구</text>
+  <rect x="470" y="60" width="120" height="60" rx="8" fill="#3a2f10" stroke="#fbbf24" stroke-width="2"/>
+  <text x="530" y="88" text-anchor="middle" class="s-lab" font-size="12" fill="#fbbf24">흡입구</text>
+  <text x="530" y="106" text-anchor="middle" class="s-cap">→ 되돌아감</text>
+  <text x="265" y="175" text-anchor="middle" class="s-dim" font-size="12">급기 → 실내 → 환기(리턴)</text>
+</svg><div class="figcap">덕트 → 취출구 → 실내 → 흡입구</div></div>
+<table class="tbl">
+<tr><th style="width:26%">취출구 종류</th><th>특징</th></tr>
+<tr><td>아네모형(원형)</td><td>천장에 달아 사방으로 고르게 확산 — 사무실·교실</td></tr>
+<tr><td>라인(선형)형</td><td>가늘고 길게 — 창가·인테리어 조화</td></tr>
+<tr><td>노즐형</td><td>{{멀리}} 뿜음 — 체육관·공항 등 큰 공간</td></tr>
+</table>
+<div class="defbox">취출구 위치가 나쁘면 <span class="hl-r">찬바람이 직접</span> 사람에게 닿아(드래프트) 불쾌해집니다.</div>`},
 
 /* ═══════════ 단원 4 · 시스템 ═══════════ */
 {u:4,t:"온열원기기 — 보일러의 3대 구성",html:
@@ -493,23 +597,61 @@ var SLIDES = [
 </table>
 <div class="defbox">실제 <span class="hl-g">냉방 효과</span>는 <span class="hl-g">증발기</span>에서 난다 (열을 빼앗음).</div>`},
 
+{u:4,t:"히트펌프 — 냉방과 난방을 하나로",html:
+`<div class="lead">냉매의 <span class="hl">흐름 방향만 바꾸면</span> 같은 기계로 냉방도 난방도 됩니다. 그 열쇠가 <span class="hl-a">사방밸브</span>입니다.</div>
+<div class="fig"><svg viewBox="0 0 620 200">
+  <defs><marker id="ah1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#38bdf8"/></marker>
+        <marker id="ah2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#fb7185"/></marker></defs>
+  <!-- 여름 -->
+  <text x="150" y="24" text-anchor="middle" class="s-lab" font-size="14" fill="#38bdf8">여름 · 냉방</text>
+  <rect x="30" y="40" width="100" height="50" rx="8" fill="#0e2233" stroke="#38bdf8" stroke-width="2"/>
+  <text x="80" y="70" text-anchor="middle" class="s-lab" font-size="12">실내기</text>
+  <rect x="170" y="40" width="100" height="50" rx="8" fill="#2c1220" stroke="#fb7185" stroke-width="2"/>
+  <text x="220" y="70" text-anchor="middle" class="s-lab" font-size="12">실외기</text>
+  <text x="80" y="110" text-anchor="middle" class="s-lab" font-size="11" fill="#38bdf8">증발기(열 흡수)</text>
+  <text x="220" y="110" text-anchor="middle" class="s-lab" font-size="11" fill="#fb7185">응축기(열 방출)</text>
+  <path d="M130 55 L168 55" stroke="#fb7185" stroke-width="3" marker-end="url(#ah2)"/>
+  <text x="150" y="140" text-anchor="middle" class="s-dim" font-size="11">실내 열을 밖으로</text>
+  <!-- 사방밸브 -->
+  <rect x="285" y="52" width="50" height="34" rx="8" fill="#3a2f10" stroke="#fbbf24" stroke-width="2"/>
+  <text x="310" y="74" text-anchor="middle" class="s-lab" font-size="11" fill="#fbbf24">사방</text>
+  <text x="310" y="103" text-anchor="middle" class="s-cap">밸브로 전환</text>
+  <!-- 겨울 -->
+  <text x="470" y="24" text-anchor="middle" class="s-lab" font-size="14" fill="#fb7185">겨울 · 난방</text>
+  <rect x="350" y="40" width="100" height="50" rx="8" fill="#2c1220" stroke="#fb7185" stroke-width="2"/>
+  <text x="400" y="70" text-anchor="middle" class="s-lab" font-size="12">실내기</text>
+  <rect x="490" y="40" width="100" height="50" rx="8" fill="#0e2233" stroke="#38bdf8" stroke-width="2"/>
+  <text x="540" y="70" text-anchor="middle" class="s-lab" font-size="12">실외기</text>
+  <text x="400" y="110" text-anchor="middle" class="s-lab" font-size="11" fill="#fb7185">응축기(열 방출)</text>
+  <text x="540" y="110" text-anchor="middle" class="s-lab" font-size="11" fill="#38bdf8">증발기(열 흡수)</text>
+  <path d="M488 55 L452 55" stroke="#fb7185" stroke-width="3" marker-end="url(#ah2)"/>
+  <text x="470" y="140" text-anchor="middle" class="s-dim" font-size="11">바깥 열을 안으로</text>
+  <text x="310" y="180" text-anchor="middle" class="s-lab" font-size="12" fill="#fbbf24">실내기·실외기의 역할이 서로 바뀐다</text>
+</svg><div class="figcap">사방밸브가 냉매 방향을 바꿔 실내기↔실외기 역할을 교대</div></div>
+<table class="tbl">
+<tr><th></th><th>실내기 역할</th><th>실외기 역할</th></tr>
+<tr><td><b class="hl">냉방</b></td><td>{{증발기}} (열 흡수)</td><td>{{응축기}} (열 방출)</td></tr>
+<tr><td><b class="hl-r">난방</b></td><td>{{응축기}} (열 방출)</td><td>{{증발기}} (열 흡수)</td></tr>
+</table>
+<div class="defbox">히트펌프는 열을 <b>만드는</b> 게 아니라 <span class="hl">퍼 옮기는</span> 것 — 그래서 효율이 좋습니다.</div>`},
+
 {u:4,t:"냉동 부속기기와 출력단자",html:
 `<div class="grid2">
 <div>
 <table class="tbl">
 <tr><th>부속</th><th>역할</th></tr>
-<tr><td>수액기</td><td>액냉매를 일시 저장</td></tr>
-<tr><td>필터 드라이어</td><td>수분·이물질 제거</td></tr>
-<tr><td>전자밸브(S.V)</td><td>전원 ON/OFF로 흐름 통제</td></tr>
+<tr><td>수액기</td><td>{{액냉매를 일시 저장}}</td></tr>
+<tr><td>필터 드라이어</td><td>{{수분·이물질 제거}}</td></tr>
+<tr><td>전자밸브(S.V)</td><td>{{전원 ON/OFF로 흐름 통제}}</td></tr>
 </table>
 </div>
 <div>
 <table class="tbl">
 <tr><th>단자</th><th>무엇의 모터?</th></tr>
-<tr><td><b>COMP</b></td><td>압축기 모터</td></tr>
-<tr><td><b>CFM</b></td><td>응축기 팬 모터</td></tr>
-<tr><td><b>EFM</b></td><td>증발기 팬 모터</td></tr>
-<tr><td><b>S.V</b></td><td>주배관 전자밸브</td></tr>
+<tr><td><b>COMP</b></td><td>{{압축기}} 모터</td></tr>
+<tr><td><b>CFM</b></td><td>{{응축기}} 팬 모터</td></tr>
+<tr><td><b>EFM</b></td><td>{{증발기}} 팬 모터</td></tr>
+<tr><td><b>S.V</b></td><td>{{주배관 전자밸브}}</td></tr>
 </table>
 </div>
 </div>
@@ -520,8 +662,8 @@ var SLIDES = [
 <div class="figimg"><img src="img/refrig-system.jpg" alt="표준 냉동 시스템 계통도"></div>
 <table class="tbl">
 <tr><th>단자</th><th>의미</th><th>단자</th><th>의미</th></tr>
-<tr><td><b>COMP</b></td><td>압축기 모터</td><td><b>EFM</b></td><td>증발기 팬 모터</td></tr>
-<tr><td><b>CFM</b></td><td>응축기 팬 모터</td><td><b>S.V</b></td><td>주배관 전자밸브</td></tr>
+<tr><td><b>COMP</b></td><td>{{압축기 모터}}</td><td><b>EFM</b></td><td>{{증발기 팬 모터}}</td></tr>
+<tr><td><b>CFM</b></td><td>{{응축기 팬 모터}}</td><td><b>S.V</b></td><td>{{주배관 전자밸브}}</td></tr>
 </table>`},
 
 {u:4,t:"공기조화기(AHU)의 구성",html:
@@ -571,7 +713,7 @@ var SLIDES = [
   <defs><marker id="a7" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#9db0d6"/></marker></defs>
   </g>
 </svg></div>
-<div class="keyrow"><span class="k"><b>목푯값</b> = 원하는 값</span><span class="k"><b>측정값</b> = 지금 값</span></div>`},
+<div class="keyrow"><span class="k"><b>목푯값</b> = {{원하는 값}}</span><span class="k"><b>측정값</b> = {{지금 값}}</span></div>`},
 
 {u:5,t:"시퀀스 제어 vs 피드백 제어",html:
 `<div class="grid2">
@@ -601,8 +743,8 @@ var SLIDES = [
 </div>
 <table class="tbl">
 <tr><th></th><th>시퀀스 제어</th><th>피드백 제어</th></tr>
-<tr><td>방식</td><td>정해진 순서대로</td><td>결과를 되먹임해 수정</td></tr>
-<tr><td>예</td><td>엘리베이터·보일러 연소</td><td>실온 유지·수위 제어</td></tr>
+<tr><td>방식</td><td>{{정해진 순서대로}}</td><td>{{결과를 되먹임해 수정}}</td></tr>
+<tr><td>예</td><td>{{엘리베이터}}·보일러 연소</td><td>{{실온 유지}}·수위 제어</td></tr>
 </table>`},
 
 {u:5,t:"시퀀스 회로 ① 자기유지 · ② 인터록",html:
@@ -641,8 +783,8 @@ var SLIDES = [
 {u:5,t:"실제 회로도 — 자기유지 · 인터록",html:
 `<div class="ssub">시험에 나오는 실제 회로도입니다. 이름과 동작을 눈에 익히세요.</div>
 <div class="imgrow">
-  <div><div class="figimg"><img src="img/self-hold.png" alt="자기유지 회로도"></div><div class="figcap">자기유지 — PB1 기동, PB2 정지, Ry-a로 유지</div></div>
-  <div><div class="figimg"><img src="img/interlock.png" alt="인터록 회로도"></div><div class="figcap">인터록 — PB1→Ry1·RL, PB2→Ry2·GL, 서로 차단</div></div>
+  <div><div class="figimg"><img src="img/self-hold.png" alt="자기유지 회로도"></div><div class="figcap">자기유지 — PB1 {{기동}}, PB2 {{정지}}, {{Ry-a}}로 유지</div></div>
+  <div><div class="figimg"><img src="img/interlock.png" alt="인터록 회로도"></div><div class="figcap">인터록 — PB1→{{Ry1·RL}}, PB2→{{Ry2·GL}}, 서로 차단</div></div>
 </div>`},
 
 {u:5,t:"시퀀스 회로 ③ 지연동작 · ④ 일정시간동작",html:
@@ -691,6 +833,35 @@ var SLIDES = [
 </table>
 <div class="defbox">서모스탯 = <span class="hl">온도</span> 스위치, 휴미디스탯 = <span class="hl">습도</span> 스위치.</div>`},
 
+{u:5,t:"제어 동작의 종류 — 2위치·비례·PID",html:
+`<div class="ssub">'어떻게 조절하느냐'에 따라 온도가 목푯값에 다가가는 모습이 달라집니다.</div>
+<div class="fig"><svg viewBox="0 0 620 180">
+  <line x1="40" y1="150" x2="600" y2="150" stroke="#2f4a80" stroke-width="1.5"/>
+  <line x1="40" y1="150" x2="40" y2="25" stroke="#2f4a80" stroke-width="1.5"/>
+  <text x="34" y="24" text-anchor="end" class="s-cap">온도</text>
+  <text x="596" y="168" text-anchor="end" class="s-cap">시간 →</text>
+  <line x1="40" y1="70" x2="600" y2="70" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="606" y="74" text-anchor="end" class="s-cap" fill="#94a3b8">목푯값</text>
+  <polyline points="40,140 90,55 140,88 190,58 240,86 290,60 340,84 390,62 440,82 490,64 540,80 590,66"
+    fill="none" stroke="#fb7185" stroke-width="2.5"/>
+  <polyline points="40,140 100,96 160,88 230,86 320,85 420,85 520,85 590,85"
+    fill="none" stroke="#fbbf24" stroke-width="2.5"/>
+  <polyline points="40,140 100,74 150,66 200,69 260,70 340,70 440,70 590,70"
+    fill="none" stroke="#34d399" stroke-width="3"/>
+  <g font-size="11">
+  <rect x="380" y="118" width="12" height="4" fill="#fb7185"/><text x="398" y="124" class="s-lab" fill="#fb7185">2위치(ON-OFF)</text>
+  <rect x="380" y="132" width="12" height="4" fill="#fbbf24"/><text x="398" y="138" class="s-lab" fill="#fbbf24">비례(P) — 오차 남음</text>
+  <rect x="380" y="146" width="12" height="4" fill="#34d399"/><text x="398" y="152" class="s-lab" fill="#34d399">PID — 정확히 수렴</text>
+  </g>
+</svg><div class="figcap">목푯값에 다가가는 모습 비교</div></div>
+<table class="tbl">
+<tr><th style="width:22%">동작</th><th>방식</th><th>특징</th></tr>
+<tr><td><b class="hl-r">2위치(ON-OFF)</b></td><td>켜거나 끄거나 <b>둘 중 하나</b></td><td>단순·저렴, {{계속 오르내림}}</td></tr>
+<tr><td><b class="hl-a">비례(P)</b></td><td>오차 크기에 <b>비례</b>해 조절</td><td>부드럽지만 {{오차가 남음}}</td></tr>
+<tr><td><b class="hl-g">PID</b></td><td>비례+적분+미분을 함께</td><td>가장 정밀 — {{목푯값에 정확히}}</td></tr>
+</table>
+<div class="defbox">가정용 보일러·에어컨은 주로 <span class="hl-r">2위치</span>, 정밀 공조(전산실·공장)는 <span class="hl-g">PID</span>를 씁니다.</div>`},
+
 /* ═══════════ 단원 6 · 시공 ═══════════ */
 {u:6,t:"물배관 — 밀폐 vs 개방",html:
 `<div class="grid2">
@@ -709,7 +880,7 @@ var SLIDES = [
   <text x="140" y="145" text-anchor="middle" class="s-dim" font-size="11">일부가 대기에 열림</text>
 </svg></div>
 </div>
-<div class="keyrow"><span class="k"><b>팽창수조</b>: 밀폐 배관의 물 팽창·수축을 흡수</span></div>`},
+<div class="keyrow"><span class="k"><b>{{팽창수조}}</b>: 밀폐 배관의 물 {{팽창·수축}}을 흡수</span></div>`},
 
 {u:6,t:"수온 기준",html:
 `<div class="ssub">쓰임에 따라 물의 온도가 정해져 있습니다.</div>
@@ -734,10 +905,10 @@ var SLIDES = [
 <div>
 <table class="tbl">
 <tr><th colspan="2">신축이음 4종</th></tr>
-<tr><td>루프형</td><td>관을 구부려 흡수</td></tr>
-<tr><td>슬리브형</td><td>미끄럼으로 흡수</td></tr>
-<tr><td>벨로즈형</td><td>주름관으로 흡수</td></tr>
-<tr><td>스위블형</td><td>이음쇠 회전으로 흡수</td></tr>
+<tr><td>{{루프}}형</td><td>관을 구부려 흡수</td></tr>
+<tr><td>{{슬리브}}형</td><td>미끄럼으로 흡수</td></tr>
+<tr><td>{{벨로즈}}형</td><td>주름관으로 흡수</td></tr>
+<tr><td>{{스위블}}형</td><td>이음쇠 회전으로 흡수</td></tr>
 </table>
 </div>
 </div>
@@ -755,7 +926,7 @@ var SLIDES = [
   <path d="M485 77 L485 148" stroke="#38bdf8" stroke-width="4" marker-end="url(#am)"/><text x="498" y="115" class="s-lab" font-size="11" fill="#38bdf8">③ 저압액</text>
   <path d="M430 172 L192 172" stroke="#38bdf8" stroke-width="4" marker-end="url(#am)"/><text x="300" y="192" text-anchor="middle" class="s-lab" font-size="11" fill="#38bdf8">④ 저압가스</text>
 </svg><div class="figcap">고압가스 → 고압액 → 저압액 → 저압가스</div></div>
-<div class="keyrow"><span class="k">굴곡부는 적게, 곡률반경은 크게, 배관은 짧게</span></div>`},
+<div class="keyrow"><span class="k">굴곡부는 {{적게}}, 곡률반경은 {{크게}}, 배관은 {{짧게}}</span></div>`},
 
 {u:6,t:"안전 — 전기화재·가스·안전장치",html:
 `<div class="grid2">
@@ -775,6 +946,31 @@ var SLIDES = [
 </div>
 </div>
 <div class="defbox"><span class="hl-r">접지</span>는 화재의 <b>원인이 아니라 예방책</b>! (자주 나오는 함정)</div>`},
+
+{u:6,t:"시운전과 유지관리",html:
+`<div class="lead">설치가 끝이 아닙니다. <span class="hl">제대로 도는지 확인(시운전)</span>하고 <span class="hl-g">꾸준히 관리</span>해야 성능이 유지됩니다.</div>
+<table class="tbl">
+<tr><th style="width:24%">단계</th><th>하는 일</th></tr>
+<tr><td><b>시운전 전 점검</b></td><td>배관·덕트 누설, 전기 결선, 회전 방향, 안전장치 작동</td></tr>
+<tr><td><b class="hl">TAB</b><br><span class="s-cap">시험·조정·평가</span></td><td>풍량·수량을 설계값에 맞게 {{조정}}하고 성능을 평가</td></tr>
+<tr><td><b>인수인계</b></td><td>운전 방법·도면·이력 인계</td></tr>
+</table>
+<div class="grid2">
+<div>
+<table class="tbl">
+<tr><th>대상</th><th>관리</th></tr>
+<tr><td>공기여과기(필터)</td><td>{{정기 청소·교체}}</td></tr>
+<tr><td>냉각탑</td><td>수질 관리·청소</td></tr>
+<tr><td>냉매</td><td>누설 점검·충전량 확인</td></tr>
+<tr><td>벨트·베어링</td><td>장력·윤활 점검</td></tr>
+</table>
+</div>
+<div class="defbox" style="border-color:#fb7185"><b>필터를 방치하면?</b><br>
+① 풍량 감소 → 냉난방 능력 저하<br>
+② 송풍기 부하 증가 → <b>전기요금 상승</b><br>
+③ 실내 공기질 악화<br>
+<span class="s-cap">가장 쉽고 효과 큰 관리가 필터 청소!</span></div>
+</div>`},
 
 /* ───── 마무리 ───── */
 {u:0,t:"정리 & 다음 단계",html:
@@ -797,6 +993,128 @@ var SLIDES = [
 
 ];
 
+/* ══════════════ 발문 — 슬라이드 제목으로 연결 ══════════════
+   💬 버튼(또는 Q키)을 누르면 나타난다. 설명 → 빈칸 → 발문 순서로 쓰면 좋다. */
+var ASKS = {
+  "공기조화란?":[
+    "지금 이 교실에서 공조가 조절하는 4가지 중, 지금 <b>가장 불편한</b> 것은 무엇인가요?",
+    "에어컨이 <b>온도만</b> 낮춘다면 왜 여전히 불쾌할까요?"],
+  "보건용 공조 vs 산업용 공조":[
+    "반도체 공장은 왜 사람이 아니라 <b>제품</b> 기준으로 온·습도를 맞출까요?",
+    "우리 학교 실습실은 보건용일까요, 산업용일까요? 그 이유는?"],
+  "현열과 잠열":[
+    "여름에 빨래가 마르면서 주변이 <b>시원해지는</b> 이유는 무엇일까요?",
+    "에어컨 밑에 물이 뚝뚝 떨어지는 것은 현열·잠열 중 어느 쪽 결과일까요?"],
+  "온도의 세 가지":[
+    "비 오는 날 건구와 습구 온도의 차이는 <b>커질까요, 작아질까요?</b>",
+    "차가운 음료수 캔에 물방울이 맺히는 온도를 무엇이라고 하나요?"],
+  "습도와 습공기선도":[
+    "같은 30℃인데 사막보다 장마철이 더 덥게 느껴지는 이유는?",
+    "겨울철 실내가 건조할 때 <b>가습</b>을 하면 습공기선도에서 어느 쪽으로 이동할까요?"],
+  "열부하란?":[
+    "교실에 학생이 30명 있을 때와 5명일 때, 냉방부하는 어떻게 달라질까요?",
+    "난방부하를 <b>너무 작게</b> 계산해 설비를 놓으면 겨울에 어떤 일이 생길까요?"],
+  "부하의 구성요소":[
+    "여름에 커튼(블라인드)을 치면 어떤 부하가 줄어들까요?",
+    "우리 교실에서 열을 내는 것들을 모두 찾아볼까요?"],
+  "냉방·난방 부하 계산 포함 여부":[
+    "사람과 조명의 열은 왜 난방에서는 <b>계산에 넣지 않을까요?</b>",
+    "틈새바람은 왜 냉방·난방 <b>모두</b> 고려해야 할까요?"],
+  "부하 계산의 기초식":[
+    "현열식에 <b>온도차</b>가, 잠열식에 <b>절대습도차</b>가 들어가는 이유는?",
+    "교실(30명)의 필요 환기량은 대략 얼마일까요? 계산해 봅시다."],
+  "공기조화설비의 4대 구성":[
+    "우리 학교 건물에서 열원장치는 <b>어디에</b> 있을까요?",
+    "4대 구성 중 하나가 고장 나면 어떤 일이 생길지 골라서 말해 볼까요?"],
+  "공조 방식의 분류":[
+    "우리 교실 에어컨은 어떤 방식일까요? 왜 그렇게 생각하나요?",
+    "큰 건물에서 <b>덕트 방식</b>을 쓰는 이유는 무엇일까요?"],
+  "정풍량(CAV) vs 변풍량(VAV)":[
+    "빈 회의실에도 같은 바람이 계속 나온다면 무엇이 낭비될까요?",
+    "VAV가 에너지 절약형인 까닭을 <b>내 말로</b> 설명해 봅시다."],
+  "환기 — 1·2·3종":[
+    "화장실을 <b>부압</b>으로 만드는 이유는 무엇일까요?",
+    "수술실이 <b>정압</b>이어야 하는 이유는? 반대로 하면 어떤 위험이 있을까요?"],
+  "온열원기기 — 보일러의 3대 구성":[
+    "보일러에서 <b>안전장치</b>가 특히 중요한 이유는 무엇일까요?",
+    "우리 집 보일러의 연료는 무엇인가요? 종류별 장단점은?"],
+  "난방 방식":[
+    "우리나라가 <b>온돌(복사난방)</b>을 발전시킨 이유는 무엇일까요?",
+    "지역난방 아파트에 사는 친구가 있나요? 개별난방과 무엇이 다를까요?"],
+  "냉열원 — 냉동사이클 ★":[
+    "냉매는 왜 <b>돌고 도는</b> 걸까요? 한 번 쓰고 버리면 안 될까요?",
+    "에어컨 실외기가 <b>뜨거운 바람</b>을 내뿜는 이유는 무엇일까요?"],
+  "냉동사이클 4대 기기의 역할":[
+    "실제로 <b>시원해지는</b> 곳은 4개 중 어디인가요?",
+    "압축기를 '심장'이라고 부르는 이유는 무엇일까요?"],
+  "냉동 부속기기와 출력단자":[
+    "냉매에 <b>수분</b>이 들어가면 어떤 문제가 생길까요?",
+    "CFM과 EFM을 헷갈리지 않으려면 어떻게 외우면 좋을까요?"],
+  "표준 냉동 시스템 계통도":[
+    "계통도에서 <b>고압부와 저압부</b>의 경계는 어디일까요?",
+    "전자밸브(S.V)가 닫히면 장치는 어떻게 될까요?"],
+  "공기조화기(AHU)의 구성":[
+    "여과기를 <b>가장 앞</b>에 두는 이유는 무엇일까요?",
+    "필터를 오래 청소하지 않으면 어떤 일이 생길까요?"],
+  "자동제어의 4요소":[
+    "우리 주변에서 자동제어가 쓰이는 예를 3가지 찾아볼까요?",
+    "4요소 중 하나가 빠지면 제어가 될까요? 어떤 문제가 생길까요?"],
+  "제어계 = 사람 몸에 비유":[
+    "온도조절기로 실온을 맞추는 과정을 <b>눈·뇌·손</b>으로 설명해 봅시다.",
+    "센서(눈)가 고장 나면 어떤 일이 벌어질까요?"],
+  "시퀀스 제어 vs 피드백 제어":[
+    "엘리베이터는 어느 쪽 제어일까요? 왜 그런가요?",
+    "에어컨의 실온 유지는 어느 쪽일까요?"],
+  "시퀀스 회로 ① 자기유지 · ② 인터록":[
+    "버튼에서 손을 떼도 기계가 계속 도는 것은 어떤 회로 덕분일까요?",
+    "인터록이 없으면 정회전·역회전이 <b>동시에</b> 걸릴 때 어떤 사고가 날까요?"],
+  "실제 회로도 — 자기유지 · 인터록":[
+    "회로도에서 <b>Ry-a</b>를 손가락으로 짚어 볼까요?",
+    "PB1을 눌렀을 때 전류가 흐르는 길을 따라가 봅시다."],
+  "시퀀스 회로 ③ 지연동작 · ④ 일정시간동작":[
+    "화장실 환풍기가 불을 끈 뒤에도 <b>한참 더 도는</b> 것은 어느 회로일까요?",
+    "기계를 예열한 뒤에 켜야 한다면 어느 회로를 쓸까요?"],
+  "실제 회로도 — 지연동작 · 일정시간동작":[
+    "두 회로도에서 <b>타이머(T)</b>의 위치가 어떻게 다른지 찾아볼까요?",
+    "타임차트에서 '늦는 지점'을 손으로 짚어 봅시다."],
+  "공조용 자동제어기기":[
+    "우리 집 보일러 온도조절기는 어떤 기기에 해당할까요?",
+    "습도까지 조절해야 하는 곳은 어디일까요? (예: 미술관·전산실)"],
+  "물배관 — 밀폐 vs 개방":[
+    "밀폐 배관에 <b>팽창수조</b>가 없으면 어떤 일이 생길까요?",
+    "개방식은 물이 공기와 닿는데, 어떤 문제가 생기기 쉬울까요?"],
+  "수온 기준":[
+    "냉수(5~10℃)를 더 차갑게 만들면 무조건 좋을까요?",
+    "지역난방이 <b>고온수</b>를 쓰는 이유는 무엇일까요?"],
+  "증기트랩과 신축이음":[
+    "증기트랩이 고장 나 증기가 새어 나가면 어떤 손해가 생길까요?",
+    "여름·겨울에 배관 길이가 변하는데, 이음이 없으면 어떻게 될까요?"],
+  "냉매배관의 4구간":[
+    "만졌을 때 <b>뜨거운</b> 배관은 4구간 중 어디일까요?",
+    "굴곡을 적게, 길이를 짧게 하는 이유는 무엇일까요?"],
+  "안전 — 전기화재·가스·안전장치":[
+    "가스 냄새가 날 때 <b>환풍기를 켜면</b> 왜 위험할까요?",
+    "안전장치가 작업에 방해될 때 어떻게 해야 할까요?"],
+  "실내 공기질 — 왜 환기가 필요한가":[
+    "6교시쯤 되면 <b>졸린 이유</b>가 공기와 관련 있을까요?",
+    "겨울에 창문을 꼭 닫아두면 무엇이 문제가 될까요?"],
+  "부하 계산 해보기 — 예제":[
+    "온도차가 <b>2배</b>가 되면 현열량은 어떻게 될까요?",
+    "같은 조건에서 송풍량만 줄이면 냉방이 어떻게 될까요?"],
+  "덕트와 취출구 — 공기가 나오는 길":[
+    "우리 교실 천장에서 <b>취출구와 흡입구</b>를 찾아볼까요?",
+    "에어컨 바람이 한 사람에게만 직접 닿으면 어떤 불만이 생길까요?"],
+  "히트펌프 — 냉방과 난방을 하나로":[
+    "에어컨 한 대로 겨울에 난방도 되는 원리를 말해 볼까요?",
+    "히트펌프가 열을 '만들지 않고 옮긴다'는 말은 무슨 뜻일까요?"],
+  "제어 동작의 종류 — 2위치·비례·PID":[
+    "우리 집 보일러는 온도가 <b>오르내리나요?</b> 어떤 제어일까요?",
+    "전산실은 왜 정밀한 PID 제어가 필요할까요?"],
+  "시운전과 유지관리":[
+    "필터 청소를 안 하면 <b>전기요금</b>이 왜 오를까요?",
+    "우리 집·교실 에어컨 필터는 마지막으로 언제 청소했나요?"]
+};
+
 /* ══════════════ 엔진 ══════════════ */
 var stage=document.getElementById('stage');
 var chipsEl=document.getElementById('chips');
@@ -805,19 +1123,81 @@ var countEl=document.getElementById('count');
 var prevB=document.getElementById('prev'), nextB=document.getElementById('next');
 var cur=0;
 
-function esc(s){return s;}
-// 슬라이드 DOM 생성
+var clozeBtn=document.getElementById('clozeBtn');
+var askBtn=document.getElementById('askBtn');
+var revealBtn=document.getElementById('revealBtn');
+var CLOZE=false;                    // 빈칸 모드 on/off
+
+/* 슬라이드 원본 HTML 보관 — 빈칸 모드를 켜고 끌 때마다 다시 그린다 */
+var RAW=[];
 SLIDES.forEach(function(s,i){
-  var sec=document.createElement('section');
-  sec.className='slide'; sec.dataset.i=i;
   var color=UCOLOR[s.u]||"#94a3b8";
   var head = s.u===0 ? '' :
     '<span class="utag" style="background:'+color+'">'+s.u+'. '+(UNAME[s.u]||'')+'</span>'
     + '<h2 class="stitle">'+s.t+'</h2>';
-  sec.innerHTML = head + s.html;
+  var ask = (ASKS[s.t]||[]);
+  var askHtml = ask.length
+    ? '<div class="askbox"><div class="ah">💬 함께 생각해 봐요</div><ul>'
+      + ask.map(function(q){ return '<li>'+q+'</li>'; }).join('') + '</ul></div>'
+    : '';
+  RAW[i] = head + s.html + askHtml;
+  var sec=document.createElement('section');
+  sec.className='slide'; sec.dataset.i=i;
   stage.appendChild(sec);
 });
 var slideEls=[].slice.call(stage.querySelectorAll('.slide'));
+
+/* 슬라이드 그리기 — 빈칸 모드면 {{답}}과 강조어(.hl 계열)를 빈칸으로 바꾼다 */
+function buildSlide(i,force){
+  var sec=slideEls[i], html=RAW[i];
+  var want = CLOZE?'cloze':'plain';
+  // 같은 모드로 이미 그려 뒀으면 그대로 둔다 (열어 놓은 빈칸이 유지되도록)
+  if(!force && sec.dataset.mode===want) return;
+  sec.dataset.mode=want;
+  if(CLOZE){
+    html = html.replace(/\{\{([\s\S]+?)\}\}/g, '<span class="bl">$1</span>');
+    sec.innerHTML = html;
+    // 이미 강조해 둔 핵심어도 빈칸으로 (빈칸 안에 든 것은 제외)
+    [].forEach.call(sec.querySelectorAll('.hl,.hl-a,.hl-r,.hl-g'), function(e){
+      if(e.closest('.bl')) return;
+      e.classList.add('bl');
+    });
+  } else {
+    // 평소에는 {{ }}를 그냥 강조 표시로
+    sec.innerHTML = html.replace(/\{\{([\s\S]+?)\}\}/g, '<b class="hl">$1</b>');
+  }
+  [].forEach.call(sec.querySelectorAll('.bl'), function(b){
+    b.onclick=function(){ openBlank(b); };
+  });
+}
+function curSlide(){ return slideEls[cur]; }
+function openBlank(b){ b.classList.remove('bl','next'); b.classList.add('op'); paintCloze(); }
+function openNextBlank(){ var b=curSlide().querySelector('.bl'); if(b){ openBlank(b); return true; } return false; }
+function paintCloze(){
+  var s=curSlide(); if(!s) return;
+  [].forEach.call(s.querySelectorAll('.bl.next'),function(e){ e.classList.remove('next'); });
+  var left=s.querySelectorAll('.bl').length, done=s.querySelectorAll('.op').length;
+  if(left) s.querySelector('.bl').classList.add('next');
+  if(CLOZE && (left+done)>0){
+    revealBtn.classList.remove('hide');
+    revealBtn.disabled = (left===0);
+    revealBtn.textContent = left ? ('빈칸 열기 '+done+'/'+(left+done)) : ('✔ 다 채웠어요 '+done+'/'+done);
+  } else {
+    revealBtn.classList.add('hide');
+  }
+}
+/* 빈칸 모드 토글 */
+function setCloze(on){
+  CLOZE=on;
+  clozeBtn.classList.toggle('act',on);
+  clozeBtn.title = on? '빈칸 모드 끄기 (B)' : '빈칸 모드 (B)';
+  buildSlide(cur); paintCloze();
+}
+clozeBtn.onclick=function(){ setCloze(!CLOZE); };
+revealBtn.onclick=function(){ openNextBlank(); };
+/* 발문 토글 */
+function setAsk(on){ document.body.classList.toggle('showask',on); askBtn.classList.toggle('act',on); }
+askBtn.onclick=function(){ setAsk(!document.body.classList.contains('showask')); };
 
 // 단원 칩 (표지·마무리 제외, 각 단원 첫 슬라이드로 점프)
 var unitFirst={};
@@ -833,7 +1213,9 @@ chipsEl.innerHTML=chipHtml;
 
 function show(n){
   cur=Math.max(0,Math.min(SLIDES.length-1,n));
+  buildSlide(cur);                                   // 현재 슬라이드를 모드에 맞게 그린다
   slideEls.forEach(function(el,i){ el.classList.toggle('on',i===cur); });
+  paintCloze();
   var s=SLIDES[cur];
   // 진행바
   pbar.style.width=((cur)/(SLIDES.length-1)*100)+'%';
@@ -849,9 +1231,13 @@ function show(n){
 prevB.onclick=function(){ show(cur-1); };
 nextB.onclick=function(){ show(cur+1); };
 document.addEventListener('keydown',function(e){
-  if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){ e.preventDefault(); show(cur+1); }
+  // 스페이스 = 빈칸이 남아 있으면 하나 열고, 다 열었으면 다음 장
+  if(e.key===' '){ e.preventDefault(); if(!(CLOZE && openNextBlank())) show(cur+1); return; }
+  if(e.key==='ArrowRight'||e.key==='PageDown'){ e.preventDefault(); show(cur+1); }
   else if(e.key==='ArrowLeft'||e.key==='PageUp'){ e.preventDefault(); show(cur-1); }
   else if(e.key==='Home'){ show(0); } else if(e.key==='End'){ show(SLIDES.length-1); }
+  else if(e.key==='b'||e.key==='B'||e.key==='ㅠ'){ setCloze(!CLOZE); }
+  else if(e.key==='q'||e.key==='Q'||e.key==='ㅂ'){ askBtn.click(); }
 });
 // 스와이프(모바일)
 var tx=0;
