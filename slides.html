@@ -51,7 +51,7 @@
   .utag{display:inline-block;font-size:12px;font-weight:900;color:#04121f;border-radius:999px;
     padding:3px 11px;margin-bottom:10px}
   .stitle{font-size:26px;font-weight:900;letter-spacing:-.5px;line-height:1.25;margin:0 0 4px}
-  .ssub{color:var(--dim);font-size:14.5px;line-height:1.6;margin:0 0 16px}
+  .ssub{color:var(--dim);font-size:14.5px;line-height:1.55;margin:0 0 12px}
   .lead{font-size:16px;line-height:1.7}
   .hl{color:var(--cyan);font-weight:800}
   .hl-a{color:var(--amber);font-weight:800}
@@ -60,14 +60,14 @@
 
   /* 정의 박스 */
   .defbox{background:var(--panel2);border-left:4px solid var(--cyan);border-radius:0 12px 12px 0;
-    padding:14px 16px;font-size:15.5px;line-height:1.7;margin:12px 0}
-  .keyrow{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+    padding:11px 14px;font-size:15px;line-height:1.6;margin:9px 0}
+  .keyrow{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
   .keyrow .k{background:#0e2233;border:1px solid #1c3a4d;border-radius:10px;padding:8px 13px;font-size:14px;font-weight:800}
   .keyrow .k b{color:var(--cyan)}
 
   /* 표 */
-  table.tbl{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px;overflow:hidden;border-radius:12px}
-  table.tbl th,table.tbl td{border:1px solid var(--line);padding:9px 11px;text-align:left;line-height:1.5}
+  table.tbl{width:100%;border-collapse:collapse;margin:9px 0;font-size:14px;overflow:hidden;border-radius:12px}
+  table.tbl th,table.tbl td{border:1px solid var(--line);padding:7px 10px;text-align:left;line-height:1.45}
   table.tbl th{background:#12233f;font-weight:800;color:#cfe0ff}
   table.tbl td{background:rgba(13,26,51,.5)}
   table.tbl td.c,table.tbl th.c{text-align:center}
@@ -77,17 +77,60 @@
   .tblcap{font-size:12px;color:var(--dim);margin-top:-4px}
 
   /* 그림 프레임 */
-  .fig{background:#081226;border:1px solid var(--line);border-radius:14px;padding:12px;margin:12px 0}
-  .fig svg{display:block;width:100%;height:auto}
+  .fig{background:#081226;border:1px solid var(--line);border-radius:14px;padding:12px;margin:10px 0}
+  /* 교실 화면에서 스크롤 없이 한 장에 담기도록 그림 높이를 제한한다
+     (SVG는 비율을 유지한 채 줄어든다) */
+  .fig svg{display:block;width:100%;height:auto;max-height:32vh}
+  /* 표·설명이 많아 한 화면에 빠듯한 슬라이드용 */
+  .fig.sm svg{max-height:23vh}
   .figcap{text-align:center;font-size:12.5px;color:var(--dim);margin-top:8px}
   .figimg{background:#f7fafc;border-radius:10px;padding:10px;text-align:center;margin:0}
-  .figimg img{max-width:100%;max-height:300px;height:auto;border-radius:4px}
+  .figimg img{max-width:100%;max-height:min(300px,34vh);height:auto;border-radius:4px}
   .imgrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
   .imgrow .figcap{margin-top:6px}
   @media(max-width:640px){.imgrow{grid-template-columns:1fr}}
 
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  @media(max-width:640px){.grid2{grid-template-columns:1fr}.stitle{font-size:22px}.slide{padding:18px 16px 22px}}
+  @media(max-width:640px){
+    .grid2{grid-template-columns:1fr}
+    .stitle{font-size:21px}
+    .slide{padding:16px 14px 18px}
+    .lead{font-size:14.5px}
+    .ssub{font-size:13.5px;margin-bottom:10px}
+    table.tbl{font-size:12.5px;margin:8px 0}
+    table.tbl th,table.tbl td{padding:6px 8px;line-height:1.4}
+    .defbox{font-size:13.5px;padding:10px 12px;margin:8px 0}
+    .fig{padding:8px;margin:8px 0}
+    .fig svg{max-height:26vh}
+    .keyrow .k{font-size:12.5px;padding:6px 10px}
+    .askbox{bottom:64px;max-height:44vh}
+  }
+  /* 화면 높이가 낮으면(짧은 노트북·프로젝터) 글자와 여백을 함께 줄여 스크롤 없이 담는다 */
+  @media(max-height:760px){
+    .slide{padding:16px 20px 18px}
+    .stitle{font-size:22px}
+    .ssub{font-size:13.5px;margin-bottom:9px}
+    .lead{font-size:14.5px}
+    .utag{font-size:11px;margin-bottom:7px}
+    table.tbl{font-size:12.8px;margin:7px 0}
+    table.tbl th,table.tbl td{padding:5px 8px;line-height:1.4}
+    .defbox{font-size:13.5px;padding:9px 12px;margin:7px 0}
+    .fig{padding:8px;margin:8px 0}
+    .fig svg{max-height:27vh}
+    .fig.sm svg{max-height:21vh}
+    .figimg img{max-height:30vh}
+    .keyrow{margin:8px 0}
+    .keyrow .k{font-size:12.5px;padding:6px 10px}
+    ul.clean{font-size:13.5px;line-height:1.6}
+    .figcap{font-size:11.5px;margin-top:5px}
+  }
+  @media(max-height:620px){
+    .stitle{font-size:19px}
+    .lead{font-size:13.5px}
+    table.tbl{font-size:12px}
+    .defbox{font-size:12.8px}
+    .fig svg{max-height:26vh}
+  }
 
   /* SVG 공통 텍스트 */
   svg text{font-family:inherit}
@@ -124,7 +167,7 @@
   ul.clean li{margin-bottom:4px}
 
   /* ── 빈칸 (수업 중 함께 채우기) ── */
-  .bl{position:relative;display:inline-block;min-width:2.4em;color:transparent!important;
+  .bl{position:relative;display:inline-block;min-width:1.9em;color:transparent!important;
     border-bottom:3px solid var(--amber);background:rgba(251,191,36,.12);
     border-radius:5px 5px 0 0;padding:0 .25em;margin:0 .05em;cursor:pointer;
     font-weight:800;transition:.16s}
@@ -139,9 +182,13 @@
   @keyframes blpop{0%{transform:scale(.72)}100%{transform:scale(1)}}
 
   /* ── 발문 (선생님 질문) ── */
-  .askbox{display:none;margin-top:16px;background:#1b1509;border:1px solid #6b5417;
-    border-left:5px solid var(--amber);border-radius:0 14px 14px 0;padding:14px 16px}
-  body.showask .askbox{display:block;animation:sin .28s ease}
+  /* 발문은 슬라이드 위에 '떠서' 보인다 — 본문 레이아웃을 밀어내지 않도록 */
+  .askbox{display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:68px;
+    width:min(920px,calc(100% - 28px));max-height:38vh;overflow-y:auto;z-index:26;
+    background:rgba(27,21,9,.97);border:1px solid #6b5417;border-left:5px solid var(--amber);
+    border-radius:14px;padding:14px 18px;box-shadow:0 -8px 34px rgba(0,0,0,.5)}
+  body.showask .slide.on .askbox{display:block;animation:askin .26s ease}
+  @keyframes askin{from{opacity:0;transform:translate(-50%,14px)}to{opacity:1;transform:translate(-50%,0)}}
   .askbox .ah{font-size:12px;font-weight:900;color:var(--amber);letter-spacing:.5px;margin-bottom:8px}
   .askbox ul{margin:0;padding-left:20px}
   .askbox li{font-size:15px;line-height:1.65;color:#f8ecc6;font-weight:700;margin-bottom:7px}
@@ -512,7 +559,7 @@ var SLIDES = [
 
 {u:3,t:"덕트와 취출구 — 공기가 나오는 길",html:
 `<div class="lead">공조기에서 만든 공기는 <span class="hl">덕트</span>를 타고 와서 <span class="hl-g">취출구</span>로 나오고, <span class="hl-a">흡입구</span>로 되돌아갑니다.</div>
-<div class="fig"><svg viewBox="0 0 620 190">
+<div class="fig sm"><svg viewBox="0 0 620 190">
   <defs><marker id="ad1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#38bdf8"/></marker></defs>
   <rect x="20" y="60" width="80" height="60" rx="8" fill="#0b2019" stroke="#34d399" stroke-width="2"/>
   <text x="60" y="95" text-anchor="middle" class="s-lab" font-size="12">공조기</text>
@@ -599,7 +646,7 @@ var SLIDES = [
 
 {u:4,t:"히트펌프 — 냉방과 난방을 하나로",html:
 `<div class="lead">냉매의 <span class="hl">흐름 방향만 바꾸면</span> 같은 기계로 냉방도 난방도 됩니다. 그 열쇠가 <span class="hl-a">사방밸브</span>입니다.</div>
-<div class="fig"><svg viewBox="0 0 620 200">
+<div class="fig sm"><svg viewBox="0 0 620 200">
   <defs><marker id="ah1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#38bdf8"/></marker>
         <marker id="ah2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#fb7185"/></marker></defs>
   <!-- 여름 -->
@@ -835,7 +882,7 @@ var SLIDES = [
 
 {u:5,t:"제어 동작의 종류 — 2위치·비례·PID",html:
 `<div class="ssub">'어떻게 조절하느냐'에 따라 온도가 목푯값에 다가가는 모습이 달라집니다.</div>
-<div class="fig"><svg viewBox="0 0 620 180">
+<div class="fig sm"><svg viewBox="0 0 620 180">
   <line x1="40" y1="150" x2="600" y2="150" stroke="#2f4a80" stroke-width="1.5"/>
   <line x1="40" y1="150" x2="40" y2="25" stroke="#2f4a80" stroke-width="1.5"/>
   <text x="34" y="24" text-anchor="end" class="s-cap">온도</text>
@@ -865,19 +912,21 @@ var SLIDES = [
 /* ═══════════ 단원 6 · 시공 ═══════════ */
 {u:6,t:"물배관 — 밀폐 vs 개방",html:
 `<div class="grid2">
-<div class="fig"><svg viewBox="0 0 280 160">
-  <text x="140" y="18" text-anchor="middle" class="s-lab" font-size="13" fill="#38bdf8">밀폐순환식</text>
-  <rect x="40" y="40" width="200" height="80" rx="40" fill="none" stroke="#38bdf8" stroke-width="3"/>
-  <rect x="125" y="26" width="30" height="24" rx="5" fill="#0e2233" stroke="#38bdf8" stroke-width="2"/><text x="140" y="20" text-anchor="middle" class="s-cap">팽창수조</text>
-  <text x="140" y="86" text-anchor="middle" class="s-dim" font-size="11">닫힌 고리</text>
+<div class="fig"><svg viewBox="0 0 280 168">
+  <text x="140" y="16" text-anchor="middle" class="s-lab" font-size="13" fill="#38bdf8">밀폐순환식</text>
+  <rect x="120" y="32" width="30" height="22" rx="5" fill="#0e2233" stroke="#38bdf8" stroke-width="2"/>
+  <text x="158" y="47" class="s-cap">팽창수조</text>
+  <rect x="40" y="58" width="200" height="80" rx="40" fill="none" stroke="#38bdf8" stroke-width="3"/>
+  <text x="140" y="102" text-anchor="middle" class="s-dim" font-size="11">닫힌 고리</text>
 </svg></div>
-<div class="fig"><svg viewBox="0 0 280 160">
-  <text x="140" y="18" text-anchor="middle" class="s-lab" font-size="13" fill="#34d399">개방순환식</text>
-  <path d="M60 120 L60 60 L120 60" fill="none" stroke="#34d399" stroke-width="3"/>
-  <path d="M160 60 L220 60 L220 120 L60 120" fill="none" stroke="#34d399" stroke-width="3"/>
-  <rect x="118" y="40" width="44" height="26" rx="4" fill="#0b2019" stroke="#34d399" stroke-width="2"/><text x="140" y="34" text-anchor="middle" class="s-cap">냉각탑</text>
-  <text x="140" y="30" font-size="12">☁️</text>
-  <text x="140" y="145" text-anchor="middle" class="s-dim" font-size="11">일부가 대기에 열림</text>
+<div class="fig"><svg viewBox="0 0 280 168">
+  <text x="140" y="16" text-anchor="middle" class="s-lab" font-size="13" fill="#34d399">개방순환식</text>
+  <text x="186" y="50" font-size="15">☁️</text>
+  <rect x="108" y="32" width="60" height="26" rx="4" fill="#0b2019" stroke="#34d399" stroke-width="2"/>
+  <text x="138" y="49" text-anchor="middle" class="s-cap">냉각탑</text>
+  <path d="M60 132 L60 58 L108 58" fill="none" stroke="#34d399" stroke-width="3"/>
+  <path d="M168 58 L220 58 L220 132 L60 132" fill="none" stroke="#34d399" stroke-width="3"/>
+  <text x="140" y="156" text-anchor="middle" class="s-dim" font-size="11">일부가 대기에 열림</text>
 </svg></div>
 </div>
 <div class="keyrow"><span class="k"><b>{{팽창수조}}</b>: 밀폐 배관의 물 {{팽창·수축}}을 흡수</span></div>`},
