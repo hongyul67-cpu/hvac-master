@@ -8,6 +8,8 @@
   :root{ --bg:#070d1c; --panel:#0d1a33; --panel2:#111f3d; --line:#243456;
          --ink:#eaf1ff; --dim:#9db0d6; --acc:#22d3ee; }
   *{box-sizing:border-box}
+  /* 버튼은 색·글꼴을 상속하지 않아 기본 검은 글씨가 된다 — 어두운 배경에서 안 보이므로 전역 지정 */
+  button,input,select,textarea{color:var(--ink);font-family:inherit}
   html,body{margin:0}
   body{background:radial-gradient(1200px 700px at 50% -10%,#12234a,#070d1c 60%);
        color:var(--ink);font-family:system-ui,"Segoe UI",Roboto,"Malgun Gothic",sans-serif;
@@ -33,7 +35,7 @@
   /* 단원 선택 */
   .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
   .utile{border:1px solid var(--line);background:var(--panel);border-radius:16px;padding:14px;
-    cursor:pointer;transition:.15s;text-align:left}
+    cursor:pointer;transition:.15s;text-align:left;color:var(--ink);font-family:inherit}
   .utile:active{transform:scale(.98)}
   .utile .ic{font-size:26px}
   .utile .nm{font-weight:900;margin-top:6px;font-size:15px}
@@ -42,7 +44,7 @@
 
   .modes{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 6px}
   .mode{flex:1;min-width:130px;border:1px solid var(--line);background:var(--panel);
-    border-radius:14px;padding:12px;cursor:pointer;transition:.15s}
+    border-radius:14px;padding:12px;cursor:pointer;transition:.15s;color:var(--ink);font-family:inherit}
   .mode:active{transform:scale(.98)}
   .mode .mi{font-size:22px}
   .mode .mt{font-weight:900;margin-top:4px;font-size:14px}
@@ -88,7 +90,7 @@
   .mcol{display:flex;flex-direction:column;gap:8px}
   .mitem{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:12px;
     cursor:pointer;font-size:13.5px;line-height:1.4;transition:.12s;text-align:left;min-height:52px;
-    display:flex;align-items:center}
+    display:flex;align-items:center;color:var(--ink);font-family:inherit}
   .mitem.term{font-weight:800}
   .mitem.sel{border-color:var(--acc);background:#0e2b3d;box-shadow:0 0 0 2px rgba(34,211,238,.25)}
   .mitem.done{opacity:.35;pointer-events:none;border-style:dashed}
@@ -99,7 +101,7 @@
   .sortstage{margin:8px 0}
   .chip{border:1px solid var(--line);background:var(--panel2);border-radius:999px;
     padding:11px 15px;font-size:14px;font-weight:700;cursor:grab;display:inline-block;
-    margin:4px;user-select:none;touch-action:none}
+    margin:4px;user-select:none;touch-action:none;color:var(--ink);font-family:inherit}
   .chip.drag{opacity:.5}
   .pool{min-height:64px;display:flex;flex-wrap:wrap;gap:2px;justify-content:center;
     padding:8px;border:1px dashed var(--line);border-radius:14px;margin-bottom:12px}
@@ -123,6 +125,12 @@
   .ostep.ok{border-color:#34d399;background:#0f2c22}
   .ostep.no{}
 
+  /* 학습 기록 */
+  .stgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .stb{background:#0a1730;border:1px solid var(--line);border-radius:11px;padding:9px 4px;text-align:center}
+  .stb b{display:block;font-size:19px;font-weight:900;line-height:1.2}
+  .stb span{font-size:10.5px;color:var(--dim);font-weight:700}
+
   .center{text-align:center}
   .big{font-size:40px}
   .hide{display:none!important}
@@ -143,6 +151,12 @@
   <div id="screen"></div>
 </div>
 
+<!-- 결과 제출 위젯 (교사 URL은 링크 뒤 ?rc=... 로 전달) -->
+<script src="https://hongyul67-cpu.github.io/links/collector.js"
+        data-tool="공기조화설비 개념게임"
+        data-classes="1,2,3,4,5,6,7,8,9,10"
+        data-max-num="40"></script>
+
 <script src="fx.js"></script>
 <script src="data.js"></script>
 <script>
@@ -150,6 +164,45 @@
 var GJ = window.GJ;
 var screen = document.getElementById('screen');
 FX.hud(document.getElementById('hud'));
+
+/* ══════════ 학습 기록 (시도·정답·오답 집계) ══════════
+   맞히면 correct+1, 틀리면 miss+1 — 둘 다 '시도'로 카운트해 정확도를 낸다. */
+var STATS = { correct:0, miss:0, t0:Date.now(), wrong:[], played:false };
+function statHit(){ STATS.correct++; STATS.played=true; paintStat(); }
+function statMiss(label){
+  STATS.miss++; STATS.played=true;
+  if(label && STATS.wrong.indexOf(label)<0 && STATS.wrong.length<15) STATS.wrong.push(label);
+  paintStat();
+}
+function statTries(){ return STATS.correct + STATS.miss; }
+function statLine(){ return '시도 <b>'+statTries()+'</b> · 정답 <b>'+STATS.correct+'</b> · 틀림 <b>'+STATS.miss+'</b> · 정확도 <b>'+statAcc()+'%</b>'; }
+function statAcc(){ var t=statTries(); return t? Math.round(STATS.correct/t*100) : 0; }
+function statReset(){ STATS={ correct:0, miss:0, t0:Date.now(), wrong:[], played:false }; }
+function paintStat(){   // 모드 메뉴에 떠 있으면 즉시 갱신
+  var box=document.getElementById('statbox'); if(!box) return;
+  box.innerHTML = statCardInner();
+}
+function statCardInner(){
+  return '<div class="stgrid">'
+    + '<div class="stb"><b>'+statTries()+'</b><span>시도</span></div>'
+    + '<div class="stb"><b style="color:#34d399">'+STATS.correct+'</b><span>정답</span></div>'
+    + '<div class="stb"><b style="color:#fb7185">'+STATS.miss+'</b><span>틀림</span></div>'
+    + '<div class="stb"><b style="color:#22d3ee">'+statAcc()+'%</b><span>정확도</span></div>'
+    + '</div>';
+}
+/* 결과 제출 */
+window.submitGame = function(){
+  if(!window.ResultCollector){ alert('제출 기능을 불러오지 못했습니다. 인터넷 연결을 확인하세요.'); return; }
+  if(statTries()===0){ alert('아직 푼 문제가 없어요. 게임을 한 번 해보고 제출하세요!'); return; }
+  ResultCollector.open({
+    score: statAcc(),                      // 정확도(%)를 점수로
+    correct: STATS.correct,
+    total: statTries(),                    // 시도 횟수(정답+오답)
+    wrong: STATS.wrong,                    // 틀린 개념 이름들
+    durationSec: Math.round((Date.now()-STATS.t0)/1000),
+    labels: { score:'정확도', correct:'정답' }
+  });
+};
 
 /* 유틸 */
 function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i];a[i]=a[j];a[j]=t; } return a; }
@@ -161,7 +214,7 @@ var state = { unit:null };   // 선택한 단원(null=전체)
 
 /* ══════════ 홈: 단원 선택 ══════════ */
 function home(){
-  FX.reset();
+  FX.reset(); statReset();
   var cards = GJ.units.map(function(u){
     var n = GJ.cards.filter(function(c){return c.u===u.id}).length;
     return '<button class="utile" onclick="pickUnit('+u.id+')">'
@@ -200,7 +253,14 @@ function modeMenu(){
     '<div class="topline"><span>선택: <b style="color:#fff">'+title+'</b></span>'
     + '<button class="btn ghost sm" onclick="home()">단원 바꾸기</button></div>'
     + '<div class="modes">'+modes+'</div>'
-    + '<div class="card muted" style="font-size:12.5px;line-height:1.6;margin-top:6px">'
+    + '<div class="sechead"><b>내 학습 기록</b><span class="ln"></span></div>'
+    + '<div class="card" style="padding:14px">'
+    +   '<div id="statbox">'+statCardInner()+'</div>'
+    +   '<button class="btn" style="margin-top:12px" onclick="submitGame()">📤 결과 제출하기</button>'
+    +   '<div class="muted" style="font-size:12px;margin-top:8px;line-height:1.55;text-align:center">'
+    +     '틀리면 <b style="color:#fb7185">시도</b>에 함께 기록돼요 · 여러 게임을 한 뒤 한 번에 제출하면 됩니다</div>'
+    + '</div>'
+    + '<div class="card muted" style="font-size:12.5px;line-height:1.6;margin-top:10px">'
     + '💡 <b style="color:#fff">배우기</b>를 먼저 한 바퀴 돌린 뒤 게임을 하면 훨씬 쉬워요. '
     + '게임에서 <b style="color:#22d3ee">콤보</b>를 쌓으면 점수가 2~3배!</div>';
 }
@@ -273,14 +333,17 @@ function matchTap(b){
   var a=match.sel; match.sel=null; a.classList.remove('sel');
   if(a.dataset.i===b.dataset.i){
     a.classList.add('done'); b.classList.add('done');
-    FX.ok(b,{base:10}); match.done++;
+    FX.ok(b,{base:10}); match.done++; statHit();
     if(match.done===match.pairs.length){
       setTimeout(function(){ FX.banner({icon:'🔗',title:'모두 연결 완료!',
-        sub:'점수 <b>'+FX.score()+'</b> · 최고 콤보 <b>'+FX.best()+'</b>',
-        stars:FX.starsFor(match.miss),btn:'다시 / 메뉴 →',onClose:modeMenu}); },420);
+        sub:'점수 <b>'+FX.score()+'</b> · 최고 콤보 <b>'+FX.best()+'</b><br>'+statLine(),
+        stars:FX.starsFor(match.miss),btn:'기록 보기 · 제출 →',onClose:modeMenu}); },420);
     }
   } else {
     match.miss++; FX.no(b); a.classList.add('bad'); b.classList.add('bad');
+    // 틀린 '용어'를 기록 (둘 중 term 쪽)
+    var termEl = a.classList.contains('term') ? a : (b.classList.contains('term') ? b : null);
+    statMiss(termEl ? termEl.textContent.trim() : null);
     setTimeout(function(){ a.classList.remove('bad'); b.classList.remove('bad'); },420);
   }
 }
@@ -329,12 +392,13 @@ function tryPlace(chipEl,bucket,s){
     chipEl.classList.remove('sel'); chipEl.setAttribute('draggable','false');
     chipEl.style.cursor='default'; chipEl.style.borderColor='#34d399';
     bucket.querySelector('.drop').appendChild(chipEl);
-    FX.ok(chipEl,{base:10}); sortG.placed++;
+    FX.ok(chipEl,{base:10}); sortG.placed++; statHit();
     if(sortG.placed===s.items.length){
       setTimeout(function(){ nextSort(); },420);
     }
   } else {
     sortG.miss++; FX.no(chipEl); chipEl.classList.remove('sel');
+    statMiss(chipEl.textContent.trim());
   }
 }
 function nextSort(){
@@ -342,9 +406,9 @@ function nextSort(){
   /* 랭킹전 — 한 세트를 마칠 때마다 실수 횟수로 환산해 정산 */
   if(window.RankKit) RankKit.award(Math.max(0,100-sortG.miss*10),'공기조화설비 개념');
   FX.banner({icon:'🗂️',title:'분류 완료!',
-    sub:(last?'모든 분류를 마쳤어요! ':'')+'점수 <b>'+FX.score()+'</b>',
+    sub:(last?'모든 분류를 마쳤어요! ':'')+'점수 <b>'+FX.score()+'</b><br>'+statLine(),
     stars:FX.starsFor(sortG.miss),
-    btn: last?'메뉴로 →':'다음 문제 →',
+    btn: last?'기록 보기 · 제출 →':'다음 문제 →',
     onClose:function(){ if(last){ modeMenu(); } else { sortG.si++; runSort(); } }});
 }
 
@@ -410,14 +474,15 @@ window.checkOrder=function(){
   items.forEach(function(it,i){ it.classList.remove('ok');
     if(parseInt(it.dataset.ans,10)===i){ it.classList.add('ok'); } else { wrong++; } });
   if(wrong===0){
-    FX.ok(list,{base:20,n:16});
+    FX.ok(list,{base:20,n:16}); statHit();
     var last=ord.oi===ord.sets.length-1;
     setTimeout(function(){ FX.banner({icon:'🔢',title:'순서 정답!',
-      sub:(last?'모든 순서 문제 완료! ':'')+'점수 <b>'+FX.score()+'</b>',
-      stars:3,btn:last?'메뉴로 →':'다음 →',
+      sub:(last?'모든 순서 문제 완료! ':'')+'점수 <b>'+FX.score()+'</b><br>'+statLine(),
+      stars:3,btn:last?'기록 보기 · 제출 →':'다음 →',
       onClose:function(){ if(last){modeMenu();} else {ord.oi++; runOrder();} }}); },420);
   } else {
     FX.no(list); FX.flash('rgba(251,113,133,.4)');
+    statMiss(ord.sets[ord.oi].title);
   }
 };
 

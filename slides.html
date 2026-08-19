@@ -12,6 +12,8 @@
     --red:#fb7185; --violet:#a78bfa; --pink:#f472b6; --sky:#38bdf8;
   }
   *{box-sizing:border-box}
+  /* 버튼은 색·글꼴을 상속하지 않아 기본 검은 글씨가 된다 — 어두운 배경에서 안 보이므로 전역 지정 */
+  button{color:var(--ink);font-family:inherit}
   html,body{margin:0;height:100%}
   body{background:radial-gradient(1400px 800px at 50% -10%,#12234a,#070d1c 62%);
     color:var(--ink);font-family:system-ui,"Segoe UI",Roboto,"Malgun Gothic",sans-serif;
@@ -89,9 +91,16 @@
 
   /* SVG 공통 텍스트 */
   svg text{font-family:inherit}
-  .s-lab{fill:var(--ink);font-weight:800}
-  .s-dim{fill:var(--dim)}
-  .s-cap{fill:var(--dim);font-size:11px}
+  /* 색을 깜빡한 SVG 글자는 기본이 '검정' — 어두운 배경에서 안 보이므로 밝은 기본색을 준다.
+     (class나 fill을 직접 지정한 글자는 그대로 유지) */
+  svg text:not([class]):not([fill]){fill:var(--ink)}
+  /* fill을 직접 지정한 글자(색으로 뜻을 구분하는 라벨)는 그 색을 살린다.
+     CSS 규칙은 presentation attribute를 이기므로 :not([fill])로 비켜준다. */
+  .s-lab{font-weight:800}
+  .s-lab:not([fill]){fill:var(--ink)}
+  .s-dim:not([fill]){fill:var(--dim)}
+  .s-cap{font-size:11px}
+  .s-cap:not([fill]){fill:var(--dim)}
 
   /* 하단 내비게이션 */
   .nav{position:fixed;bottom:0;left:0;right:0;height:58px;z-index:30;display:flex;align-items:center;
